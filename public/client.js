@@ -16,10 +16,17 @@
     fontFamily: '"Cascadia Mono", Consolas, "Liberation Mono", monospace',
     fontSize: 14,
     theme: {
-      background: "#0b0f14",
-      foreground: "#d6e2ef",
-      cursor: "#9fe870",
-      selectionBackground: "#28445f"
+      background: "#050805",
+      foreground: "#d7ffd7",
+      cursor: "#40ff7a",
+      selectionBackground: "#174d2c",
+      black: "#050805",
+      green: "#40ff7a",
+      brightGreen: "#8dffb0",
+      cyan: "#65e8ff",
+      brightCyan: "#a4f3ff",
+      yellow: "#ffe66d",
+      brightYellow: "#fff0a3"
     }
   });
 

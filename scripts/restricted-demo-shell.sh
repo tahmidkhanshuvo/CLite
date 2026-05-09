@@ -4,7 +4,20 @@ set -u
 cd "$HOME" || exit 1
 
 export PATH="/usr/local/bin:/usr/bin:/bin"
-export PS1="demo:\w$ "
+
+prompt_text() {
+  local shown resolved_home resolved_pwd
+  resolved_home="$(realpath -m "$HOME")"
+  resolved_pwd="$(realpath -m "$PWD")"
+  if [[ "$resolved_pwd" == "$resolved_home" ]]; then
+    shown="~"
+  elif [[ "$resolved_pwd" == "$resolved_home"/* ]]; then
+    shown="~/${resolved_pwd#"$resolved_home"/}"
+  else
+    shown="$PWD"
+  fi
+  printf "\033[1;32mdemo:%s$ \033[0m" "$shown"
+}
 
 cat <<'BANNER'
   ____ _     _ _
@@ -18,8 +31,7 @@ Creator: Tahmid Khan
 Public Demo Mode
 Use only for legal CTF/lab targets.
 
-Allowed commands: ls, cd, pwd, cat, grep, find, echo, file, strings, base64, python3, clear, help, exit
-This demo shell blocks shell metacharacters and network/admin/package commands.
+Type help to see available demo commands.
 BANNER
 
 allowed_command() {
@@ -43,7 +55,8 @@ print_help() {
 }
 
 while true; do
-  printf "%s" "$PS1"
+  printf "\n"
+  prompt_text
   IFS= read -r line || break
 
   [[ -z "${line// }" ]] && continue

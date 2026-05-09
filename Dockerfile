@@ -13,6 +13,14 @@ ENV PORT=7860 \
     PIPX_HOME=/opt/pipx \
     PIPX_BIN_DIR=/usr/local/bin
 
+RUN printf '%s\n' \
+      'Types: deb' \
+      'URIs: http://mirrors.kernel.org/debian' \
+      'Suites: bookworm bookworm-updates' \
+      'Components: main' \
+      'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' \
+    > /etc/apt/sources.list.d/debian.sources
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
       bash \
@@ -29,15 +37,23 @@ RUN apt-get update \
       file \
       nano \
       vim-tiny \
+      xxd \
       curl \
       wget \
       git \
       jq \
+      tree \
+      tmux \
+      procps \
+      psmisc \
+      net-tools \
       python3 \
       python3-pip \
       python3-venv \
       pipx \
       netcat-openbsd \
+      openssh-client \
+      nmap \
       socat \
       openssl \
       dnsutils \
@@ -53,6 +69,7 @@ RUN apt-get update \
       ltrace \
       patchelf \
       sqlmap \
+      neofetch \
       libcap2-bin \
     && rm -rf /var/lib/apt/lists/*
 

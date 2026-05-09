@@ -46,7 +46,7 @@ Use only for legal CTF/lab targets.
 
 const TEAM_BASHRC = String.raw`cat <<'CLITE_BANNER'` + CLITE_BANNER + String.raw`
 CLITE_BANNER
-export PS1="clite:\w$ "
+export PS1="\[\033[1;32m\]clite:\w$ \[\033[0m\]"
 `;
 
 function minutes(n) {
@@ -285,12 +285,7 @@ class SessionManager {
   handleMessage(session, raw) {
     session.lastActivityAt = Date.now();
 
-    if (Buffer.isBuffer(raw)) {
-      session.terminal.write(raw.toString("utf8"));
-      return;
-    }
-
-    const data = String(raw);
+    const data = Buffer.isBuffer(raw) ? raw.toString("utf8") : String(raw);
     if (data.startsWith("{")) {
       try {
         const message = JSON.parse(data);

@@ -1,41 +1,124 @@
 # CLite
 
-CLite is a lightweight browser-based Linux/CTF web shell. It uses xterm.js in the browser, Node.js/Express/ws on the backend, and node-pty to attach a terminal to temporary bash sessions.
+```text
+  ____ _     _ _
+ / ___| |   (_) |_ ___
+| |   | |   | | __/ _ \
+| |___| |___| | ||  __/
+ \____|_____|_|\__\___|
+```
 
-Use only for legal CTF/lab targets.
+CLite is a lightweight browser-based Linux/CTF shell. It uses xterm.js in the browser, Node.js/Express/ws on the backend, and node-pty to attach each browser session to a temporary terminal.
 
-## Modes
+Use only for legal CTF, lab, training, and owned targets.
 
-Public Demo Mode is available at `/demo`. It has no login, a short timeout, a max session count, and starts a restricted command loop instead of a full attack shell. It is intended for portfolio visitors and basic Linux learning.
+## Runtime
 
-Team Mode is available at `/team?key=TEAM_SECRET`. It uses a shared key from `TEAM_KEY`, starts real non-root bash as user `ctf`, and keeps each session in a temporary home directory.
+The Docker image is based on:
 
-There is no account system by design. A shared key is simpler for a small team, but rotate it if it leaks.
+```text
+node:22-bookworm-slim
+Debian GNU/Linux 12 Bookworm
+```
 
-## Temporary Sessions
+Browser terminal sessions run as the non-root Linux user:
 
-For every terminal connection CLite creates:
+```text
+ctf
+```
+
+Session homes are temporary and are removed when the WebSocket disconnects, the session expires, or the idle timer fires.
 
 ```text
 /tmp/ctf-web-cli/sessions/<session_id>/home
 ```
 
-Starter files are copied from `/opt/ctf-template`. When the WebSocket disconnects, the session times out, or the idle timer expires, CLite kills the pty and removes the session directory with `fs.rm`.
+## Modes
 
-Session IDs are random UUIDs. Session directories use restrictive permissions and the parent sessions directory is not listable. For hostile multi-tenant use, add stronger isolation such as one container per session, nsjail, firejail, gVisor, Kata Containers, or per-session Unix users.
+Public Demo Mode:
 
-## Security Notes
+- URL: `/demo`
+- No login.
+- Short timeout.
+- Restricted command loop.
+- Blocks shell metacharacters, network commands, admin commands, and package management.
+- Intended for portfolio visitors and basic Linux practice.
 
-- Shells are spawned as non-root user `ctf`.
-- App secrets are not passed into the shell environment.
-- `TEAM_KEY` is only checked by the backend.
-- `sudo` and `su` are removed from the Docker image.
-- Users do not get privileged containers or Docker socket access.
-- `apt install` is not useful to users because they are not root.
-- Public demo mode blocks common shell metacharacters and only allows a small command list.
-- CLite logs session start/end events, not every typed command.
+Team Mode:
+
+- URL: `/team?key=TEAM_SECRET`
+- Uses the shared `TEAM_KEY`.
+- Starts real non-root bash as `ctf`.
+- Includes common CTF and Linux tooling.
+- Still has no `sudo`, `su`, Docker socket, or root access from the browser.
+
+## Installed Tools
+
+Core shell and file tools:
+
+```text
+bash coreutils findutils grep sed gawk less tar gzip zip unzip file
+nano vim-tiny xxd tree tmux procps psmisc net-tools
+```
+
+Network and web tools:
+
+```text
+curl wget netcat-openbsd socat openssl openssh-client nmap
+dnsutils whois iputils-ping iproute2
+```
+
+Development and reversing basics:
+
+```text
+git jq python3 python3-pip python3-venv pipx
+gcc g++ make gdb binutils strace ltrace patchelf
+```
+
+CTF helpers:
+
+```text
+sqlmap neofetch
+```
+
+Python packages can be installed inside a temporary virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install requests pwntools pycryptodome beautifulsoup4
+```
+
+These installs are deleted with the session.
+
+## SSH
+
+Users can use SSH as a client in Team Mode:
+
+```bash
+ssh user@host
+scp file user@host:/tmp/
+sftp user@host
+```
+
+CLite does not run an SSH server. Incoming SSH access to the container is not enabled. Admin maintenance should be done from the host with Docker:
+
+```bash
+docker exec -it -u root clite-app bash
+```
+
+## Rules
+
+- Use CLite only for legal CTF/lab targets.
+- Browser sessions run as non-root `ctf`.
+- `sudo` and `su` are intentionally removed.
+- Browser users must not be allowed to run `apt install`.
+- Add system packages in the Dockerfile, rebuild, and redeploy.
 - Do not mount `/var/run/docker.sock`.
-- Do not run this container with `--privileged`.
+- Do not run the container with `--privileged`.
+- Do not store secrets in templates or user-visible session files.
+- `TEAM_KEY` is checked only by the backend.
+- CLite logs session start/end events, not every typed command.
 
 ## Environment Variables
 
@@ -47,26 +130,12 @@ MAX_PUBLIC_SESSIONS=2
 PUBLIC_TIMEOUT_MINUTES=10
 TEAM_TIMEOUT_MINUTES=180
 IDLE_TIMEOUT_MINUTES=10
+CTF_UID=1001
+CTF_GID=1001
+BASE_SESSIONS_DIR=/tmp/ctf-web-cli/sessions
 ```
 
-## Run Locally
-
-Install Node.js 22 and system build tools needed by `node-pty`.
-
-```bash
-npm install
-npm start
-```
-
-Open:
-
-```text
-http://localhost:7860
-```
-
-For local non-Docker use, create a Linux user named `ctf` with UID/GID 1001 or set `CTF_UID` and `CTF_GID` to an existing non-root account. Docker is the recommended path.
-
-## Docker
+## Run With Docker
 
 Build:
 
@@ -77,60 +146,73 @@ docker build -t clite .
 Run:
 
 ```bash
-docker run --rm -p 7860:7860 -e TEAM_KEY=test123 clite
+docker run -d --name clite-app -p 7860:7860 -e TEAM_KEY=test123 clite
 ```
 
 Open:
 
 ```text
 http://localhost:7860
-```
-
-Team mode:
-
-```text
 http://localhost:7860/team?key=test123
+http://localhost:7860/demo
 ```
 
-## Python Packages
-
-Team users may install Python packages inside temporary homes:
+Stop:
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install requests pwntools pycryptodome beautifulsoup4
+docker stop clite-app
 ```
 
-These packages are deleted when the session is cleaned up.
+Remove:
 
-## Hugging Face Spaces
+```bash
+docker rm clite-app
+```
 
-Create a Space with Docker SDK. Your Space metadata should include:
+If port `7860` is already busy:
+
+```bash
+docker run -d --name clite-app -p 7862:7860 -e TEAM_KEY=test123 clite
+```
+
+Then open:
+
+```text
+http://localhost:7862/team?key=test123
+```
+
+## Local Development
+
+Docker is the recommended way to run CLite because it gives users a real Linux environment.
+
+For local Node development:
+
+```bash
+npm install
+npm start
+```
+
+On Windows, local development uses a Windows shell fallback. Use Docker or WSL when you need the real Linux CTF environment.
+
+## Deployment
+
+Hugging Face Spaces:
 
 ```yaml
 sdk: docker
 app_port: 7860
 ```
 
-Add `TEAM_KEY` as a Space secret. Hugging Face will route traffic to port `7860`.
+Set `TEAM_KEY` as a Space secret.
 
-## Render
-
-Create a Web Service from this repository using Docker.
-
-Set environment variables:
+Render:
 
 ```text
 PORT=7860
 TEAM_KEY=<strong shared key>
 ```
 
-Render may provide its own `PORT`; CLite reads `PORT` automatically.
-
-## Oracle Cloud VPS
-
-Install Docker on the VPS, then:
+Oracle Cloud VPS:
 
 ```bash
 git clone <your-repo-url>
@@ -144,23 +226,31 @@ docker run -d \
   clite
 ```
 
-Put Nginx or Caddy in front if you need HTTPS. Keep the container unprivileged and do not mount the Docker socket.
+Put Nginx or Caddy in front for HTTPS.
 
 ## Adding Tools Safely
 
-Edit the `apt-get install` list in `Dockerfile`, rebuild, and redeploy. Prefer command-line tools with small dependency trees. Avoid huge wordlists, GUI/browser tools, and services that need root or background daemons.
+Edit the `apt-get install` list in `Dockerfile`, rebuild, and redeploy:
 
-Do not add `sudo`. Do not allow users to run `apt`. Keep package installation in the image build step so runtime sessions stay temporary and controlled.
+```bash
+docker build -t clite .
+docker rm -f clite-app
+docker run -d --name clite-app -p 7860:7860 -e TEAM_KEY=test123 clite
+```
+
+Prefer small command-line tools. Avoid huge wordlists, GUI/browser tools, background services, and anything that requires runtime root privileges.
 
 ## Troubleshooting
 
-`node-pty` fails during install:
-
-Install compiler tooling. The Dockerfile includes `python3`, `make`, and `g++`.
-
 Terminal connects and immediately closes:
 
-Check container logs for session creation errors. Confirm the `ctf` user exists and that `/tmp/ctf-web-cli/sessions` is writable.
+Check container logs:
+
+```bash
+docker logs clite-app
+```
+
+Confirm the `ctf` user exists and `/tmp/ctf-web-cli/sessions` is writable.
 
 Team mode returns 403:
 
@@ -168,11 +258,11 @@ The `key` query parameter must match `TEAM_KEY`.
 
 `sudo` is missing:
 
-That is intentional. CLite should never expose root shells.
+That is intentional. CLite should not expose root shells to browser users.
 
 `apt install` fails:
 
-That is intentional. Add required tools to the Dockerfile and rebuild the image.
+That is intentional. Add packages to the Dockerfile and rebuild.
 
 Public demo blocks a command:
 
