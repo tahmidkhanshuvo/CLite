@@ -6,11 +6,12 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "dev": "NODE_ENV=development node server.js"
+    "dev": "node server.js"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
+    "dotenv": "^16.4.7",
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.1",
     "node-pty": "^1.0.0",

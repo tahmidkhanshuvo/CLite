@@ -1,5 +1,7 @@
 "use strict";
 
+require("dotenv").config();
+
 const crypto = require("crypto");
 const fs = require("fs/promises");
 const os = require("os");
@@ -19,13 +21,18 @@ const PUBLIC_TIMEOUT_MINUTES = Number(process.env.PUBLIC_TIMEOUT_MINUTES || 10);
 const TEAM_TIMEOUT_MINUTES = Number(process.env.TEAM_TIMEOUT_MINUTES || 180);
 const IDLE_TIMEOUT_MINUTES = Number(process.env.IDLE_TIMEOUT_MINUTES || 10);
 
-const BASE_SESSIONS_DIR = "/tmp/ctf-web-cli/sessions";
+const IS_WINDOWS = process.platform === "win32";
+const BASE_SESSIONS_DIR = process.env.BASE_SESSIONS_DIR || (
+  IS_WINDOWS
+    ? path.join(os.tmpdir(), "ctf-web-cli", "sessions")
+    : "/tmp/ctf-web-cli/sessions"
+);
 const TEMPLATE_ROOT = "/opt/ctf-template";
 const LOCAL_TEMPLATE_ROOT = path.join(__dirname, "templates");
 const CTF_UID = Number(process.env.CTF_UID || 1001);
 const CTF_GID = Number(process.env.CTF_GID || 1001);
 
-const TEAM_BASHRC = String.raw`cat <<'CLITE_BANNER'
+const CLITE_BANNER = String.raw`
   ____ _     _ _       
  / ___| |   (_) |_ ___ 
 | |   | |   | | __/ _ \
@@ -35,8 +42,10 @@ const TEAM_BASHRC = String.raw`cat <<'CLITE_BANNER'
 CLite v0.1 Beta
 Creator: Tahmid Khan
 Use only for legal CTF/lab targets.
-CLITE_BANNER
+`;
 
+const TEAM_BASHRC = String.raw`cat <<'CLITE_BANNER'` + CLITE_BANNER + String.raw`
+CLITE_BANNER
 export PS1="clite:\w$ "
 `;
 
@@ -95,6 +104,38 @@ async function chownRecursive(target, uid, gid) {
       await fs.chown(child, uid, gid).catch(() => {});
     }
   }
+}
+
+function getLocalWindowsShell() {
+  const systemRoot = process.env.SystemRoot || "C:\\Windows";
+  const cmd = process.env.ComSpec || path.join(systemRoot, "System32", "cmd.exe");
+  return {
+    shell: cmd,
+    args: ["/Q", "/K", "prompt clite:$P$G"],
+    envShell: cmd
+  };
+}
+
+function getPtyConfig(mode, homeDir) {
+  if (IS_WINDOWS) {
+    const { shell, args, envShell } = getLocalWindowsShell();
+    return {
+      shell,
+      args,
+      envShell,
+      options: {}
+    };
+  }
+
+  return {
+    shell: mode === "demo" ? "/usr/local/bin/restricted-demo-shell" : "/bin/bash",
+    args: mode === "demo" ? [] : ["--noprofile", "--rcfile", path.join(homeDir, ".bashrc"), "-i"],
+    envShell: "/bin/bash",
+    options: {
+      uid: CTF_UID,
+      gid: CTF_GID
+    }
+  };
 }
 
 function wsSend(ws, payload) {
@@ -161,27 +202,25 @@ class SessionManager {
     await fs.chmod(sessionDir, 0o700);
     await fs.chmod(homeDir, 0o700);
 
-    const shell = mode === "demo" ? "/usr/local/bin/restricted-demo-shell" : "/bin/bash";
-    const args = mode === "demo" ? [] : ["--noprofile", "--rcfile", path.join(homeDir, ".bashrc"), "-i"];
+    const ptyConfig = getPtyConfig(mode, homeDir);
     const env = {
       HOME: homeDir,
       USER: "ctf",
       LOGNAME: "ctf",
-      SHELL: "/bin/bash",
+      SHELL: ptyConfig.envShell,
       TERM: "xterm-256color",
       LANG: "C.UTF-8",
       LC_ALL: "C.UTF-8",
-      PATH: "/usr/local/bin:/usr/bin:/bin"
+      PATH: IS_WINDOWS ? (process.env.PATH || "") : "/usr/local/bin:/usr/bin:/bin"
     };
 
-    const terminal = pty.spawn(shell, args, {
+    const terminal = pty.spawn(ptyConfig.shell, ptyConfig.args, {
       name: "xterm-256color",
       cols,
       rows,
       cwd: homeDir,
       env,
-      uid: CTF_UID,
-      gid: CTF_GID
+      ...ptyConfig.options
     });
 
     const session = {
@@ -232,6 +271,13 @@ class SessionManager {
       idleTimeoutMs,
       startedAt: now
     });
+
+    if (IS_WINDOWS) {
+      wsSend(ws, {
+        type: "notice",
+        message: `${CLITE_BANNER}\nLocal Windows development shell started. Docker/WSL is required for the restricted Linux demo shell.`
+      });
+    }
 
     return session;
   }

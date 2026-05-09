@@ -27,6 +27,8 @@
   term.loadAddon(fitAddon);
   term.open(terminalEl);
 
+  let socket = null;
+
   function fit() {
     fitAddon.fit();
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -39,7 +41,7 @@
   const scheme = window.location.protocol === "https:" ? "wss" : "ws";
   const qs = new URLSearchParams({ cols: String(term.cols), rows: String(term.rows) });
   if (mode === "team") qs.set("key", params.get("key") || "");
-  const socket = new WebSocket(`${scheme}://${window.location.host}/ws/${mode}?${qs.toString()}`);
+  socket = new WebSocket(`${scheme}://${window.location.host}/ws/${mode}?${qs.toString()}`);
 
   let expiresAt = 0;
   let timerHandle = null;
@@ -79,6 +81,10 @@
           return;
         }
         if (message.type === "error") {
+          term.writeln(`\r\n${message.message}`);
+          return;
+        }
+        if (message.type === "notice") {
           term.writeln(`\r\n${message.message}`);
           return;
         }
