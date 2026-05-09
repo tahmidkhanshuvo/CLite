@@ -1,0 +1,9 @@
+Welcome to CLite public demo mode.
+
+Try:
+
+  pwd
+  ls
+  cat README.md
+  grep -n CLite README.md
+  python3 -c "print('hello from python')"

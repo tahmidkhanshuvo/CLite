@@ -1,0 +1,22 @@
+{
+  "name": "clite",
+  "version": "1.0.0",
+  "description": "Lightweight browser-based Linux/CTF web shell with public demo and team modes.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.1",
+    "node-pty": "^1.0.0",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
