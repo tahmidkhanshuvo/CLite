@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">CLite - CLI Lite</title>
+  <desc id="desc">Fast Linux terminal in the browser for CTF practice, command-line learning, and team labs.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#07150a"/>
+      <stop offset="1" stop-color="#020402"/>
+    </linearGradient>
+    <pattern id="scan" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="2" fill="#40ff7a" opacity="0.04"/>
+    </pattern>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#scan)"/>
+  <rect x="82" y="76" width="1036" height="478" fill="#050805" opacity="0.44" stroke="#40ff7a" stroke-opacity="0.47" stroke-width="2"/>
+  <rect x="116" y="108" width="968" height="56" fill="#050805" opacity="0.74" stroke="#40ff7a" stroke-opacity="0.47" stroke-width="2"/>
+  <text x="146" y="144" fill="#40ff7a" font-family="Consolas, 'Cascadia Mono', monospace" font-size="22" font-weight="700">ctf@clite:~$</text>
+  <text x="320" y="144" fill="#9bc8a3" font-family="Consolas, 'Cascadia Mono', monospace" font-size="22">./clite --release v1.0</text>
+  <rect x="966" y="122" width="66" height="28" fill="#40ff7a"/>
+  <text x="982" y="142" fill="#07100a" font-family="Consolas, 'Cascadia Mono', monospace" font-size="16" font-weight="800">LIVE</text>
+  <g fill="#40ff7a" font-family="Consolas, 'Cascadia Mono', monospace" font-size="31" font-weight="700" filter="url(#softGlow)" xml:space="preserve">
+    <text x="126" y="266">  ____ _     _ _</text>
+    <text x="126" y="304"> / ___| |   (_) |_ ___</text>
+    <text x="126" y="342">| |   | |   | | __/ _ \</text>
+    <text x="126" y="380">| |___| |___| | ||  __/</text>
+    <text x="126" y="418"> \____|_____|_|\__\___|</text>
+  </g>
+  <text x="130" y="492" fill="#40ff7a" font-family="Consolas, 'Cascadia Mono', monospace" font-size="25" font-weight="800">CLI Lite / v1.0</text>
+  <text x="670" y="306" fill="#d7ffd7" font-family="Consolas, 'Cascadia Mono', monospace" font-size="32">Fast Linux terminal</text>
+  <text x="670" y="348" fill="#d7ffd7" font-family="Consolas, 'Cascadia Mono', monospace" font-size="32">in the browser</text>
+  <text x="672" y="400" fill="#ffd166" font-family="Consolas, 'Cascadia Mono', monospace" font-size="21">CTF practice.</text>
+  <text x="672" y="432" fill="#ffd166" font-family="Consolas, 'Cascadia Mono', monospace" font-size="21">Command-line learning.</text>
+  <text x="672" y="464" fill="#ffd166" font-family="Consolas, 'Cascadia Mono', monospace" font-size="21">Team labs.</text>
+</svg>
