@@ -14,7 +14,7 @@
     cursorBlink: true,
     convertEol: true,
     fontFamily: '"Cascadia Mono", Consolas, "Liberation Mono", monospace',
-    fontSize: 14,
+    fontSize: window.innerWidth <= 480 ? 12 : 14,
     theme: {
       background: "#050805",
       foreground: "#d7ffd7",

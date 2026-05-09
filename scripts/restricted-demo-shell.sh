@@ -26,17 +26,19 @@ cat <<'BANNER'
 | |___| |___| | ||  __/
  \____|_____|_|\__\___|
 
-CLite v0.1 Beta
+CLite v1.0
+CLI Lite
 Creator: Tahmid Khan
 Public Demo Mode
-Use only for legal CTF/lab targets.
+Built for ethical CTFs, lab practice, and owned learning environments.
+Need help? admin@tahmidkhan.com.bd
 
 Type help to see available demo commands.
 BANNER
 
 allowed_command() {
   case "$1" in
-    ls|pwd|cat|grep|find|echo|file|strings|base64|python3|clear|help|exit) return 0 ;;
+    ls|pwd|cat|grep|find|echo|file|strings|base64|python3|clear|help|exit|neofetch|tree|head|tail|wc|sort|uniq|xxd) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -50,8 +52,38 @@ inside_home() {
 }
 
 print_help() {
-  echo "Allowed: ls cd pwd cat grep find echo file strings base64 python3 clear help exit"
-  echo "Demo sessions are temporary and limited. Team mode provides a fuller non-root bash."
+  cat <<'HELP'
+
+CLite Demo Help
+---------------
+
+Public Demo commands
+
+| Command group | Available tools | Use for |
+| --- | --- | --- |
+| Navigation | pwd, ls, cd, tree | Move around and inspect the demo workspace. |
+| Reading files | cat, head, tail, file | View text and identify file types. |
+| Searching text | grep, find | Locate files and search inside content. |
+| Text utilities | echo, wc, sort, uniq | Print, count, sort, and clean text output. |
+| Encoding/bytes | base64, strings, xxd | Inspect encoded text and readable binary strings. |
+| Scripting | python3 | Run small Python snippets and scripts. |
+| System info | neofetch | Show the CLite Linux environment. |
+| Terminal | clear, help, exit | Manage the demo shell. |
+
+Team Mode highlights
+
+| Tool group | Team tools | Use for |
+| --- | --- | --- |
+| Network | curl, wget, nc, socat, nmap, ping, dig, whois, ssh, scp, sftp | Work with owned/lab services and remote hosts. |
+| Development | git, python3, pip, pipx, gcc, g++, make, jq | Build scripts, parse data, and compile code. |
+| Reversing/debugging | gdb, objdump, readelf, strace, ltrace, patchelf, xxd, strings | Inspect and debug binaries. |
+| Workspace | tmux, nano, vim.tiny, tree, zip, unzip, tar, gzip | Manage files and terminal workflow. |
+| CTF helpers | sqlmap, neofetch | Practice against authorized lab targets. |
+
+Team-only in this public demo: ssh, curl, wget, nc, nmap, git, gcc, gdb, sqlmap, apt, sudo, su.
+Demo mode keeps the public shell focused on safe local learning. Team Mode provides the fuller CLite lab shell.
+
+HELP
 }
 
 while true; do

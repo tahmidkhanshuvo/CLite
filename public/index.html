@@ -9,28 +9,36 @@
   <body>
     <main class="landing">
       <section class="hero">
+        <div class="shell-line" aria-label="Launch command">
+          <span class="prompt">ctf@clite:~$</span>
+          <span class="command">./clite --mode browser --release v1.0</span>
+          <span class="state">online</span>
+        </div>
         <pre class="ascii" aria-label="CLite logo">  ____ _     _ _
  / ___| |   (_) |_ ___
 | |   | |   | | __/ _ \
 | |___| |___| | ||  __/
  \____|_____|_|\__\___|</pre>
-        <p class="eyebrow">Browser CTF shell</p>
+        <p class="eyebrow">CLI Lite / v1.0</p>
         <h1>CLite</h1>
-        <p class="summary">A temporary Linux terminal for CTF practice, with a restricted public demo and keyed team mode.</p>
-        <p class="warning">Use only for legal CTF/lab targets.</p>
+        <p class="summary">CLI Lite brings a fast Linux terminal to the browser for CTF practice, command-line learning, and team lab work.</p>
+        <p class="warning">Built for ethical CTFs, lab practice, and owned learning environments.</p>
         <div class="actions">
           <a class="button primary" href="/demo">Public Demo Shell</a>
           <button class="button" id="teamButton" type="button">Team Shell</button>
+          <a class="button support-button" href="mailto:admin@tahmidkhan.com.bd">Contact Support</a>
         </div>
       </section>
       <section class="notes" aria-label="Mode summary">
         <article>
           <h2>Public Demo Mode</h2>
-          <p>Short-lived, command-limited terminal for portfolio visitors and basic Linux practice.</p>
+          <p>A guided browser terminal for exploring Linux basics and CLite's CTF-style workflow.</p>
+          <code>demo:~$ help</code>
         </article>
         <article>
           <h2>Team Mode</h2>
-          <p>Shared-key access to a temporary non-root bash session with common CTF tools.</p>
+          <p>A collaborative lab shell with practical Linux, networking, Python, and CTF tooling ready to use.</p>
+          <code>clite:~$ neofetch</code>
         </article>
       </section>
     </main>

@@ -8,9 +8,35 @@
  \____|_____|_|\__\___|
 ```
 
-CLite is a lightweight browser-based Linux/CTF shell. It uses xterm.js in the browser, Node.js/Express/ws on the backend, and node-pty to attach each browser session to a temporary terminal.
+CLite means **CLI Lite**.
 
-Use only for legal CTF, lab, training, and owned targets.
+CLite v1.0 is a lightweight browser-based Linux/CTF shell. It uses xterm.js in the browser, Node.js/Express/ws on the backend, and node-pty to attach each browser session to a temporary terminal.
+
+Built for ethical CTFs, lab practice, command-line training, and owned learning environments.
+
+Need help? Contact admin@tahmidkhan.com.bd.
+
+Live release:
+
+```text
+https://clite.tahmidkhan.com.bd
+```
+
+## Release
+
+```text
+Version: 1.0.0
+Creator: Tahmid Khan
+Launch: clite.tahmidkhan.com.bd
+```
+
+## Support
+
+For help, feedback, or access questions, contact:
+
+```text
+admin@tahmidkhan.com.bd
+```
 
 ## Runtime
 
@@ -43,6 +69,12 @@ Public Demo Mode:
 - Restricted command loop.
 - Blocks shell metacharacters, network commands, admin commands, and package management.
 - Intended for portfolio visitors and basic Linux practice.
+- Allows only safe local commands:
+
+```text
+ls cd pwd cat grep find echo file strings base64 python3 neofetch tree
+head tail wc sort uniq xxd clear help exit
+```
 
 Team Mode:
 
@@ -51,6 +83,13 @@ Team Mode:
 - Starts real non-root bash as `ctf`.
 - Includes common CTF and Linux tooling.
 - Still has no `sudo`, `su`, Docker socket, or root access from the browser.
+- Allows the installed command-line tools available in `PATH`, including network clients such as `ssh`, `curl`, `wget`, `nc`, and `nmap`.
+
+## Public vs Team
+
+Public Demo Mode is intentionally limited. It is for showing CLite safely to visitors without giving them a general-purpose shell. It can inspect files, run simple text-processing commands, run small Python snippets, and show system info with `neofetch`.
+
+Team Mode is the real CTF shell. It gives trusted users a normal non-root bash session with the preinstalled toolset. Team users can use outbound network tools and SSH clients, but they still cannot install system packages, use sudo, switch users, or become root from the browser.
 
 ## Installed Tools
 
@@ -109,7 +148,7 @@ docker exec -it -u root clite-app bash
 
 ## Rules
 
-- Use CLite only for legal CTF/lab targets.
+- Keep CLite focused on ethical CTFs, lab practice, and owned learning environments.
 - Browser sessions run as non-root `ctf`.
 - `sudo` and `su` are intentionally removed.
 - Browser users must not be allowed to run `apt install`.
@@ -155,6 +194,12 @@ Open:
 http://localhost:7860
 http://localhost:7860/team?key=test123
 http://localhost:7860/demo
+```
+
+Production launch:
+
+```text
+https://clite.tahmidkhan.com.bd
 ```
 
 Stop:

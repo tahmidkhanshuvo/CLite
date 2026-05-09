@@ -1,4 +1,6 @@
-Welcome to CLite public demo mode.
+Welcome to CLite v1.0 public demo mode.
+
+CLite means CLI Lite.
 
 Try:
 

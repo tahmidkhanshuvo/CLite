@@ -1,7 +1,7 @@
 {
   "name": "clite",
   "version": "1.0.0",
-  "description": "Lightweight browser-based Linux/CTF web shell with public demo and team modes.",
+  "description": "CLI Lite: a lightweight browser-based Linux/CTF web shell with public demo and team modes.",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {

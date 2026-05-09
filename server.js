@@ -39,13 +39,20 @@ const CLITE_BANNER = String.raw`
 | |___| |___| | ||  __/
  \____|_____|_|\__\___|
 
-CLite v0.1 Beta
+CLite v1.0
+CLI Lite
 Creator: Tahmid Khan
-Use only for legal CTF/lab targets.
+Built for ethical CTFs, lab practice, and owned learning environments.
+Need help? admin@tahmidkhan.com.bd
 `;
 
 const TEAM_BASHRC = String.raw`cat <<'CLITE_BANNER'` + CLITE_BANNER + String.raw`
 CLITE_BANNER
+__clite_prompt_gap() {
+  printf '\n'
+}
+
+export PROMPT_COMMAND=__clite_prompt_gap
 export PS1="\[\033[1;32m\]clite:\w$ \[\033[0m\]"
 `;
 

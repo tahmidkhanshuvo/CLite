@@ -46,9 +46,50 @@ a {
 .hero {
   width: min(960px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 88px 0 40px;
+  padding: 64px 0 44px;
   align-self: center;
   min-width: 0;
+}
+
+.shell-line {
+  width: min(100%, 680px);
+  min-height: 34px;
+  margin: 0 0 24px;
+  border: 1px solid rgba(64, 255, 122, 0.22);
+  background: rgba(5, 8, 5, 0.68);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.3;
+  box-shadow: 0 0 24px rgba(64, 255, 122, 0.08);
+  overflow: hidden;
+}
+
+.shell-line .prompt {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.shell-line .command {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell-line .state {
+  flex: 0 0 auto;
+  color: #07100a;
+  background: var(--accent);
+  padding: 2px 7px;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  font-weight: 800;
 }
 
 .ascii {
@@ -82,7 +123,7 @@ h1 {
 
 .summary {
   max-width: 620px;
-  margin: 24px 0 16px;
+  margin: 20px 0 12px;
   color: var(--muted);
   font-size: 1.1rem;
   line-height: 1.65;
@@ -90,6 +131,7 @@ h1 {
 }
 
 .warning {
+  margin: 0;
   color: var(--warn);
   font-weight: 700;
 }
@@ -98,7 +140,7 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 28px;
+  margin-top: 24px;
 }
 
 .button {
@@ -124,6 +166,19 @@ h1 {
   color: #07100a;
 }
 
+.button.support-button {
+  border-color: rgba(101, 232, 255, 0.42);
+  color: var(--accent-2);
+  background: rgba(101, 232, 255, 0.045);
+}
+
+.button:hover,
+.button:focus-visible {
+  outline: none;
+  filter: brightness(1.12);
+  text-shadow: 0 0 12px rgba(64, 255, 122, 0.24);
+}
+
 .notes {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -132,7 +187,7 @@ h1 {
 }
 
 .notes article {
-  padding: 28px;
+  padding: 22px 28px;
   border-right: 1px solid var(--line);
   min-width: 0;
 }
@@ -152,8 +207,22 @@ h1 {
   line-height: 1.5;
 }
 
+.notes code {
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 12px;
+  color: var(--accent);
+  background: rgba(64, 255, 122, 0.06);
+  border: 1px solid rgba(64, 255, 122, 0.14);
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
 .terminal-page {
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   display: grid;
   grid-template-rows: 52px auto minmax(0, 1fr);
@@ -241,13 +310,50 @@ h1 {
 }
 
 @media (max-width: 720px) {
+  body {
+    background:
+      linear-gradient(rgba(64, 255, 122, 0.022) 50%, transparent 50%) 0 0 / 100% 4px,
+      radial-gradient(circle at 50% 0, #0d2112 0, var(--bg) 58%);
+  }
+
   .hero {
     width: min(960px, calc(100% - 20px));
-    padding: 32px 0 24px;
+    padding: 24px 0 22px;
+  }
+
+  .shell-line {
+    min-height: 0;
+    margin-bottom: 18px;
+    padding: 9px 10px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 6px 8px;
+    font-size: 0.74rem;
+  }
+
+  .shell-line .prompt {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shell-line .command {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .shell-line .state {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .ascii {
     font-size: clamp(0.54rem, 2.9vw, 0.78rem);
+    margin-bottom: 14px;
   }
 
   h1 {
@@ -256,14 +362,24 @@ h1 {
 
   .summary {
     font-size: 0.98rem;
+    line-height: 1.5;
+    margin: 16px 0 10px;
+  }
+
+  .warning {
+    font-size: 0.86rem;
+    line-height: 1.45;
   }
 
   .actions {
     gap: 8px;
+    margin-top: 18px;
   }
 
   .button {
     width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
   }
 
   .notes {
@@ -271,8 +387,21 @@ h1 {
   }
 
   .notes article {
+    padding: 18px 20px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+  }
+
+  .notes h2 {
+    font-size: 0.94rem;
+  }
+
+  .notes p {
+    font-size: 0.86rem;
+  }
+
+  .notes code {
+    font-size: 0.78rem;
   }
 
   .topbar {
@@ -296,8 +425,25 @@ h1 {
 }
 
 @media (max-width: 380px) {
+  .hero {
+    width: min(100% - 16px, 960px);
+    padding-top: 18px;
+  }
+
+  .shell-line {
+    font-size: 0.68rem;
+  }
+
   .ascii {
     font-size: clamp(0.46rem, 2.65vw, 0.62rem);
+  }
+
+  h1 {
+    font-size: clamp(2.35rem, 17vw, 3.4rem);
+  }
+
+  .summary {
+    font-size: 0.9rem;
   }
 
   .banner {
