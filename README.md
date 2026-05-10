@@ -75,8 +75,11 @@ Public Demo Mode:
 - Allows only safe local commands:
 
 ```text
-ls cd pwd cat grep find echo file strings base64 python3 neofetch tree
-head tail wc sort uniq xxd clear help exit
+ls cd pwd cat grep rg find echo file strings base64 python3 neofetch tree
+head tail wc sort uniq sed awk gawk cut tr nl diff cmp comm jq xxd
+md5sum sha1sum sha256sum tar gzip gunzip zip unzip batcat fdfind
+basename dirname date uname whoami id env printenv ps free df du stat
+clear help exit
 ```
 
 Team Mode:
@@ -100,7 +103,8 @@ Core shell and file tools:
 
 ```text
 bash coreutils findutils grep sed gawk less tar gzip zip unzip file
-nano vim-tiny xxd tree tmux procps psmisc net-tools
+nano vim-tiny xxd tree tmux procps psmisc net-tools moreutils
+bsdmainutils ripgrep bat fd-find
 ```
 
 Network and web tools:
@@ -114,21 +118,28 @@ Development and reversing basics:
 
 ```text
 git jq python3 python3-pip python3-venv pipx
-gcc g++ make gdb binutils strace ltrace patchelf
+gcc g++ make gdb binutils strace ltrace patchelf nasm checksec radare2
 ```
 
 CTF helpers:
 
 ```text
-sqlmap neofetch
+sqlmap pngcheck zbar-tools steghide binwalk foremost sleuthkit
+libimage-exiftool-perl neofetch
 ```
 
-Python packages can be installed inside a temporary virtual environment:
+Preinstalled Python packages:
+
+```text
+requests beautifulsoup4 pycryptodome z3-solver capstone unicorn ropper pwntools
+```
+
+Extra Python packages can be installed inside a temporary virtual environment:
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install requests pwntools pycryptodome beautifulsoup4
+pip install <package>
 ```
 
 These installs are deleted with the session.

@@ -38,7 +38,7 @@ BANNER
 
 allowed_command() {
   case "$1" in
-    ls|pwd|cat|grep|find|echo|file|strings|base64|python3|clear|help|exit|neofetch|tree|head|tail|wc|sort|uniq|xxd) return 0 ;;
+    ls|pwd|cat|grep|rg|find|echo|printf|file|strings|base64|python3|clear|help|exit|neofetch|tree|head|tail|wc|sort|uniq|xxd|sed|awk|gawk|cut|tr|nl|diff|cmp|comm|jq|basename|dirname|date|uname|whoami|id|env|printenv|ps|free|df|du|stat|md5sum|sha1sum|sha256sum|tar|gzip|gunzip|zip|unzip|batcat|fdfind) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -63,11 +63,15 @@ Public Demo commands
 | --- | --- | --- |
 | Navigation | pwd, ls, cd, tree | Move around and inspect the demo workspace. |
 | Reading files | cat, head, tail, file | View text and identify file types. |
-| Searching text | grep, find | Locate files and search inside content. |
-| Text utilities | echo, wc, sort, uniq | Print, count, sort, and clean text output. |
-| Encoding/bytes | base64, strings, xxd | Inspect encoded text and readable binary strings. |
+| Searching text | grep, rg, find, fdfind | Locate files and search inside content. |
+| Text utilities | echo, printf, sed, awk, gawk, cut, tr, nl, wc, sort, uniq, comm | Print, reshape, count, sort, and clean text output. |
+| Comparing files | diff, cmp | Compare text or bytes between files. |
+| Data parsing | jq | Inspect and transform JSON. |
+| Encoding/bytes | base64, strings, xxd, md5sum, sha1sum, sha256sum | Inspect encoded text, binary strings, and checksums. |
+| Archives | tar, gzip, gunzip, zip, unzip | Create and inspect local archives. |
+| Paths/filesystem | basename, dirname, stat, df, du | Inspect paths, files, and disk usage. |
 | Scripting | python3 | Run small Python snippets and scripts. |
-| System info | neofetch | Show the CLite Linux environment. |
+| System info | neofetch, uname, whoami, id, env, printenv, ps, free, date | Show the CLite Linux environment. |
 | Terminal | clear, help, exit | Manage the demo shell. |
 
 Team Mode highlights
@@ -75,12 +79,13 @@ Team Mode highlights
 | Tool group | Team tools | Use for |
 | --- | --- | --- |
 | Network | curl, wget, nc, socat, nmap, ping, dig, whois, ssh, scp, sftp | Work with owned/lab services and remote hosts. |
-| Development | git, python3, pip, pipx, gcc, g++, make, jq | Build scripts, parse data, and compile code. |
-| Reversing/debugging | gdb, objdump, readelf, strace, ltrace, patchelf, xxd, strings | Inspect and debug binaries. |
-| Workspace | tmux, nano, vim.tiny, tree, zip, unzip, tar, gzip | Manage files and terminal workflow. |
-| CTF helpers | sqlmap, neofetch | Practice against authorized lab targets. |
+| Development | git, python3, pip, pipx, gcc, g++, make, nasm, jq | Build scripts, parse data, assemble, and compile code. |
+| Reversing/debugging | gdb, objdump, readelf, strace, ltrace, patchelf, checksec, radare2, xxd, strings | Inspect and debug binaries. |
+| Workspace | tmux, nano, vim.tiny, batcat, fdfind, tree, zip, unzip, tar, gzip | Manage files and terminal workflow. |
+| Forensics/stego | pngcheck, zbarimg, steghide, binwalk, foremost, sleuthkit tools, exiftool | Inspect challenge files in authorized labs. |
+| CTF helpers | sqlmap, ropper, pwntools, z3, capstone, unicorn, neofetch | Practice against authorized lab targets. |
 
-Team-only in this public demo: ssh, curl, wget, nc, nmap, git, gcc, gdb, sqlmap, apt, sudo, su.
+Team-only in this public demo: ssh, curl, wget, nc, nmap, git, gcc, gdb, radare2, sqlmap, steghide, binwalk, apt, sudo, su.
 Demo mode keeps the public shell focused on safe local learning. Team Mode provides the fuller CLite lab shell.
 
 HELP

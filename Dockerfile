@@ -38,10 +38,15 @@ RUN apt-get update \
       nano \
       vim-tiny \
       xxd \
+      bsdmainutils \
       curl \
       wget \
       git \
       jq \
+      ripgrep \
+      bat \
+      fd-find \
+      moreutils \
       tree \
       tmux \
       procps \
@@ -63,15 +68,39 @@ RUN apt-get update \
       gcc \
       g++ \
       make \
+      pkg-config \
+      patch \
       gdb \
       binutils \
       strace \
       ltrace \
       patchelf \
+      nasm \
+      checksec \
+      pngcheck \
+      zbar-tools \
+      steghide \
+      binwalk \
+      foremost \
+      sleuthkit \
+      libimage-exiftool-perl \
       sqlmap \
       neofetch \
       libcap2-bin \
     && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/radareorg/radare2 /opt/radare2 \
+    && /opt/radare2/sys/install.sh
+
+RUN python3 -m pip install --break-system-packages --no-cache-dir \
+      requests \
+      beautifulsoup4 \
+      pycryptodome \
+      z3-solver \
+      capstone \
+      unicorn \
+      ropper \
+      pwntools
 
 RUN groupadd --gid 1001 ctf \
     && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash ctf \

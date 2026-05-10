@@ -16,7 +16,8 @@ Need help? Contact admin@tahmidkhan.com.bd.
 | `neofetch` | Display system information. |
 | `python3 -m venv venv` | Create a local Python virtual environment. |
 | `source venv/bin/activate` | Activate the virtual environment. |
-| `pip install requests pwntools pycryptodome beautifulsoup4` | Add Python libraries inside this temporary workspace. |
+| `python3 -c "import pwn, z3, capstone, unicorn, Crypto"` | Confirm common CTF Python packages are available. |
+| `pip install <package>` | Add extra Python libraries inside this temporary workspace. |
 
 ## Core Tools
 
@@ -33,6 +34,8 @@ Need help? Contact admin@tahmidkhan.com.bd.
 | `tmux` | Manage multiple terminal panes/sessions. |
 | `nano` | Simple terminal text editor. |
 | `vim.tiny` | Lightweight Vim editor. |
+| `batcat` | Read files with syntax highlighting. |
+| `fdfind` | Fast file search. |
 | `file` | Identify file types. |
 | `xxd` | Hexdump and inspect bytes. |
 | `zip` / `unzip` | Work with ZIP archives. |
@@ -72,6 +75,17 @@ Need help? Contact admin@tahmidkhan.com.bd.
 | `strace` | Trace system calls. |
 | `ltrace` | Trace library calls. |
 | `patchelf` | Inspect or adjust ELF interpreter and RPATH values. |
+| `nasm` | Assemble x86/x86_64 assembly. |
+| `checksec` | Inspect binary hardening features. |
+| `radare2` | Reverse engineer and inspect binaries. |
+| `pngcheck` | Validate and inspect PNG files. |
+| `zbarimg` | Decode barcodes and QR codes from images. |
+| `steghide` | Work with steganography challenge files. |
+| `binwalk` | Analyze firmware and embedded file signatures. |
+| `foremost` | Recover files by headers and footers. |
+| `sleuthkit` | Inspect disk images and filesystems. |
+| `exiftool` | Inspect and edit metadata. |
+| `requests`, `beautifulsoup4`, `pycryptodome`, `z3-solver`, `capstone`, `unicorn`, `ropper`, `pwntools` | Preinstalled Python CTF libraries. |
 | `sqlmap` | Test SQL injection in owned/lab targets. |
 | `neofetch` | Display system information. |
 
