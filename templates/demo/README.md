@@ -58,7 +58,7 @@ Need help? Contact admin@tahmidkhan.com.bd.
 | `python3` | Run small Python snippets and scripts. |
 | `tree` | Show a folder as a directory tree. |
 | `batcat` | Read files with syntax highlighting. |
-| `neofetch` | Display system information. |
+| `fastfetch` | Display system information. |
 | `uname` | Show kernel/system details. |
 | `whoami` / `id` | Show the current session identity. |
 | `env` / `printenv` | Show environment variables. |
@@ -79,7 +79,7 @@ cat exercises/hello.txt
 grep -n CLite exercises/hello.txt
 sed -n '1,5p' exercises/hello.txt
 python3 -c "print('hello from CLite')"
-neofetch
+fastfetch
 ```
 
 Built for ethical CTFs, lab practice, and owned learning environments.

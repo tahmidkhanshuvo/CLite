@@ -75,7 +75,7 @@ Public Demo Mode:
 - Allows only safe local commands:
 
 ```text
-ls cd pwd cat grep rg find echo file strings base64 python3 neofetch tree
+ls cd pwd cat grep rg find echo file strings base64 python3 fastfetch tree
 head tail wc sort uniq sed awk gawk cut tr nl diff cmp comm jq xxd
 md5sum sha1sum sha256sum tar gzip gunzip zip unzip batcat fdfind
 basename dirname date uname whoami id env printenv ps free df du stat
@@ -93,7 +93,7 @@ Team Mode:
 
 ## Public vs Team
 
-Public Demo Mode is intentionally limited. It is for showing CLite safely to visitors without giving them a general-purpose shell. It can inspect files, run simple text-processing commands, run small Python snippets, and show system info with `neofetch`.
+Public Demo Mode is intentionally limited. It is for showing CLite safely to visitors without giving them a general-purpose shell. It can inspect files, run simple text-processing commands, run small Python snippets, and show system info with `fastfetch`.
 
 Team Mode is the real CTF shell. It gives trusted users a normal non-root bash session with the preinstalled toolset. Team users can use outbound network tools and SSH clients, but they still cannot install system packages, use sudo, switch users, or become root from the browser.
 
@@ -125,7 +125,7 @@ CTF helpers:
 
 ```text
 sqlmap pngcheck zbar-tools steghide binwalk foremost sleuthkit
-libimage-exiftool-perl neofetch
+libimage-exiftool-perl fastfetch
 ```
 
 Preinstalled Python packages:

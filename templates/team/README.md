@@ -13,7 +13,7 @@ Need help? Contact admin@tahmidkhan.com.bd.
 | `whoami` | Confirm the session user. |
 | `pwd` | Show the current directory. |
 | `ls -la` | Inspect files, permissions, and hidden files. |
-| `neofetch` | Display system information. |
+| `fastfetch` | Display system information. |
 | `python3 -m venv venv` | Create a local Python virtual environment. |
 | `source venv/bin/activate` | Activate the virtual environment. |
 | `python3 -c "import pwn, z3, capstone, unicorn, Crypto"` | Confirm common CTF Python packages are available. |
@@ -87,7 +87,7 @@ Need help? Contact admin@tahmidkhan.com.bd.
 | `exiftool` | Inspect and edit metadata. |
 | `requests`, `beautifulsoup4`, `pycryptodome`, `z3-solver`, `capstone`, `unicorn`, `ropper`, `pwntools` | Preinstalled Python CTF libraries. |
 | `sqlmap` | Test SQL injection in owned/lab targets. |
-| `neofetch` | Display system information. |
+| `fastfetch` | Display system information. |
 
 ## Session Notes
 

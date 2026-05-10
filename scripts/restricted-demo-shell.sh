@@ -38,7 +38,7 @@ BANNER
 
 allowed_command() {
   case "$1" in
-    ls|pwd|cat|grep|rg|find|echo|printf|file|strings|base64|python3|clear|help|exit|neofetch|tree|head|tail|wc|sort|uniq|xxd|sed|awk|gawk|cut|tr|nl|diff|cmp|comm|jq|basename|dirname|date|uname|whoami|id|env|printenv|ps|free|df|du|stat|md5sum|sha1sum|sha256sum|tar|gzip|gunzip|zip|unzip|batcat|fdfind) return 0 ;;
+    ls|pwd|cat|grep|rg|find|echo|printf|file|strings|base64|python3|clear|help|exit|fastfetch|tree|head|tail|wc|sort|uniq|xxd|sed|awk|gawk|cut|tr|nl|diff|cmp|comm|jq|basename|dirname|date|uname|whoami|id|env|printenv|ps|free|df|du|stat|md5sum|sha1sum|sha256sum|tar|gzip|gunzip|zip|unzip|batcat|fdfind) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -71,7 +71,7 @@ Public Demo commands
 | Archives | tar, gzip, gunzip, zip, unzip | Create and inspect local archives. |
 | Paths/filesystem | basename, dirname, stat, df, du | Inspect paths, files, and disk usage. |
 | Scripting | python3 | Run small Python snippets and scripts. |
-| System info | neofetch, uname, whoami, id, env, printenv, ps, free, date | Show the CLite Linux environment. |
+| System info | fastfetch, uname, whoami, id, env, printenv, ps, free, date | Show the CLite Linux environment. |
 | Terminal | clear, help, exit | Manage the demo shell. |
 
 Team Mode highlights
@@ -83,7 +83,7 @@ Team Mode highlights
 | Reversing/debugging | gdb, objdump, readelf, strace, ltrace, patchelf, checksec, radare2, xxd, strings | Inspect and debug binaries. |
 | Workspace | tmux, nano, vim.tiny, batcat, fdfind, tree, zip, unzip, tar, gzip | Manage files and terminal workflow. |
 | Forensics/stego | pngcheck, zbarimg, steghide, binwalk, foremost, sleuthkit tools, exiftool | Inspect challenge files in authorized labs. |
-| CTF helpers | sqlmap, ropper, pwntools, z3, capstone, unicorn, neofetch | Practice against authorized lab targets. |
+| CTF helpers | sqlmap, ropper, pwntools, z3, capstone, unicorn, fastfetch | Practice against authorized lab targets. |
 
 Team-only in this public demo: ssh, curl, wget, nc, nmap, git, gcc, gdb, radare2, sqlmap, steghide, binwalk, apt, sudo, su.
 Demo mode keeps the public shell focused on safe local learning. Team Mode provides the fuller CLite lab shell.

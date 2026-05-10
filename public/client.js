@@ -36,14 +36,21 @@
 
   let socket = null;
 
+  let fitFrame = 0;
   function fit() {
+    fitFrame = 0;
     fitAddon.fit();
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: "resize", cols: term.cols, rows: term.rows }));
     }
   }
 
-  fit();
+  function queueFit() {
+    if (fitFrame) return;
+    fitFrame = window.requestAnimationFrame(fit);
+  }
+
+  queueFit();
 
   const scheme = window.location.protocol === "https:" ? "wss" : "ws";
   const qs = new URLSearchParams({ cols: String(term.cols), rows: String(term.rows) });
@@ -76,7 +83,7 @@
 
   socket.addEventListener("open", () => {
     setStatus("Connected", true);
-    fit();
+    queueFit();
   });
 
   socket.addEventListener("message", (event) => {
@@ -120,5 +127,9 @@
     if (socket.readyState === WebSocket.OPEN) socket.send(data);
   });
 
-  window.addEventListener("resize", () => window.requestAnimationFrame(fit));
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(queueFit).observe(terminalEl);
+  }
+
+  window.addEventListener("resize", queueFit);
 })();

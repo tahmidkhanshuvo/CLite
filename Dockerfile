@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim
+FROM node:current-trixie-slim
 
 ENV PORT=7860 \
     NODE_ENV=production \
@@ -16,12 +16,19 @@ ENV PORT=7860 \
 RUN printf '%s\n' \
       'Types: deb' \
       'URIs: http://mirrors.kernel.org/debian' \
-      'Suites: bookworm bookworm-updates' \
+      'Suites: trixie trixie-updates' \
+      'Components: main' \
+      'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' \
+      '' \
+      'Types: deb' \
+      'URIs: http://security.debian.org/debian-security' \
+      'Suites: trixie-security' \
       'Components: main' \
       'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' \
     > /etc/apt/sources.list.d/debian.sources
 
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
       bash \
       coreutils \
@@ -84,8 +91,7 @@ RUN apt-get update \
       foremost \
       sleuthkit \
       libimage-exiftool-perl \
-      sqlmap \
-      neofetch \
+      fastfetch \
       libcap2-bin \
     && rm -rf /var/lib/apt/lists/*
 
@@ -102,6 +108,8 @@ RUN python3 -m pip install --break-system-packages --no-cache-dir \
       ropper \
       pwntools
 
+RUN pipx install sqlmap
+
 RUN groupadd --gid 1001 ctf \
     && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash ctf \
     && rm -f /usr/bin/sudo /bin/su /usr/bin/su \
@@ -109,6 +117,9 @@ RUN groupadd --gid 1001 ctf \
     && setcap cap_net_raw+ep /bin/ping || true
 
 WORKDIR /app
+
+RUN npm install -g npm@latest \
+    && npm cache clean --force
 
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev --no-audit --no-fund \
