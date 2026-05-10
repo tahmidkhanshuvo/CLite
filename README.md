@@ -16,6 +16,9 @@ Built for ethical CTFs, lab practice, command-line training, and owned learning 
 
 Need help? Contact admin@tahmidkhan.com.bd.
 
+<img width="1523" height="908" alt="Screenshot 2026-05-10 045213" src="https://github.com/user-attachments/assets/2e37e30e-66ce-43ed-8a29-7c0c89da3b90" />
+<img width="1525" height="907" alt="Screenshot 2026-05-10 045807" src="https://github.com/user-attachments/assets/0e11ac10-1aa4-41ad-963d-a31e5e56cf96" />
+
 Live release:
 
 ```text
