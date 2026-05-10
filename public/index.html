@@ -42,7 +42,7 @@
         <p class="warning">Built for ethical CTFs, lab practice, and owned learning environments.</p>
         <div class="actions">
           <a class="button primary" href="/demo">Public Demo Shell</a>
-          <button class="button" id="teamButton" type="button">Team Shell</button>
+          <button class="button" id="teamButton" type="button" aria-haspopup="dialog" aria-controls="teamDialog">Team Shell</button>
           <a class="button support-button" href="mailto:admin@tahmidkhan.com.bd">Contact Support</a>
         </div>
       </section>
@@ -59,6 +59,26 @@
         </article>
       </section>
     </main>
+    <dialog class="access-dialog" id="teamDialog" aria-labelledby="teamDialogTitle">
+      <form class="access-window" id="teamForm" method="dialog">
+        <div class="access-titlebar">
+          <span class="access-dot" aria-hidden="true"></span>
+          <span class="access-path">secure/team-key</span>
+          <button class="access-close" id="teamClose" type="button" aria-label="Close access window">&times;</button>
+        </div>
+        <div class="access-body">
+          <p class="eyebrow">Team Shell</p>
+          <h2 id="teamDialogTitle">Enter access key</h2>
+          <label class="access-label" for="teamKey">Team key</label>
+          <input class="access-input" id="teamKey" name="teamKey" type="password" inputmode="text" autocomplete="current-password" placeholder="team-key" required>
+          <p class="access-error" id="teamError" role="alert" aria-live="polite"></p>
+          <div class="access-actions">
+            <button class="button primary" type="submit">Open Team Shell</button>
+            <button class="button" id="teamCancel" type="button">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
     <script src="/landing.js"></script>
   </body>
 </html>
