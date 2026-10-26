@@ -12,8 +12,9 @@ ENV PORT=7860 NODE_ENV=production \
 
 # Default profile fits a small host. Optional packages add image size, not extra services.
 ARG INSTALL_HEAVY_TOOLS=false
-RUN sed -i 's|http://deb.debian.org/debian-security|https://security.debian.org/debian-security|; s|http://deb.debian.org/debian|https://mirrors.kernel.org/debian|' /etc/apt/sources.list.d/debian.sources \
-    && apt-get update \
+RUN printf 'Acquire::https::CaInfo "/etc/ssl/certs/ca-certificates.crt";\n' > /etc/apt/apt.conf.d/99clite-ca \
+    && sed -i 's|http://deb.debian.org/debian-security|https://security.debian.org/debian-security|; s|http://deb.debian.org/debian|https://mirrors.kernel.org/debian|' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update --error-on=any \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
       ca-certificates tini util-linux bash bash-completion coreutils findutils \
@@ -26,6 +27,20 @@ RUN sed -i 's|http://deb.debian.org/debian-security|https://security.debian.org/
       gcc g++ make cmake pkg-config patch gdb binutils strace ltrace patchelf nasm checksec \
       pngcheck zbar-tools steghide binwalk foremost sleuthkit libimage-exiftool-perl fastfetch \
     && if [ "$INSTALL_HEAVY_TOOLS" = true ]; then apt-get install -y --no-install-recommends hashcat tshark tcpdump; fi \
+    && rm -rf /var/lib/apt/lists/*
+
+# Preserve the reversing tool from v1 using a released, checksum-verified package.
+RUN arch="$(dpkg --print-architecture)" \
+    && case "$arch" in \
+         amd64) checksum=7019eedc0e0e87d1f53d6b8f5fc62b898567679c5efdce7fbfc557c9e7655e90 ;; \
+         arm64) checksum=bbf48ee7bd5d8282f65a297dcabd34c9961a500e62d6b036679caab187b32ef1 ;; \
+         *) echo "Unsupported radare2 architecture: $arch" >&2; exit 1 ;; \
+       esac \
+    && curl -fL --retry 3 "https://github.com/radareorg/radare2/releases/download/6.2.4/radare2_6.2.4_${arch}.deb" -o /tmp/radare2.deb \
+    && printf '%s  /tmp/radare2.deb\n' "$checksum" | sha256sum -c - \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends /tmp/radare2.deb \
+    && rm -f /tmp/radare2.deb \
     && rm -rf /var/lib/apt/lists/*
 
 # Keep the distro Python intact; all bundled libraries live in one reusable venv.

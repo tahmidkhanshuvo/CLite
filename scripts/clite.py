@@ -47,7 +47,7 @@ def apt_command(action, packages):
     installed = json.loads(manifest.read_text()) if manifest.exists() else []
     settings = ["-o", f"Dir::State::lists={APT_ROOT / 'lists'}", "-o", f"Dir::Cache::archives={APT_ROOT / 'archives'}",
                 "-o", "Debug::NoLocking=true", "-o", "APT::Sandbox::User=" + os.environ.get("USER", "ctf")]
-    if action == "update" or not any((APT_ROOT / "lists").glob("*Packages*")):
+    if action in {"update", "upgrade"} or not any((APT_ROOT / "lists").glob("*Packages*")):
         run(["apt-get", *settings, "update"])
     if action == "update":
         return

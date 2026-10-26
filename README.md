@@ -55,7 +55,7 @@ Exports include up to 50 MiB / 2000 regular files. Symlinks, `.venv`, `venv`, `.
 
 ## Tools
 
-The default image includes shell/file utilities, editors, tmux, Git, jq, SQLite, 7-Zip, zstd, curl/wget, SSH clients, netcat, socat, nmap, DNS utilities, OpenSSL, Gobuster, John and hashid. Development/reversing includes GCC/G++, Make/CMake, GDB, binutils, strace/ltrace, patchelf, NASM and checksec. Forensics includes ExifTool, binwalk, foremost, Sleuth Kit, pngcheck, zbar and steghide.
+The default image includes shell/file utilities, editors, tmux, Git, jq, SQLite, 7-Zip, zstd, curl/wget, SSH clients, netcat, socat, nmap, DNS utilities, OpenSSL, Gobuster, John and hashid. Development/reversing includes GCC/G++, Make/CMake, GDB, binutils, strace/ltrace, patchelf, NASM, checksec and checksum-pinned radare2 6.2.4. Forensics includes ExifTool, binwalk, foremost, Sleuth Kit, pngcheck, zbar and steghide.
 
 Bundled Python libraries/CLIs: requests, BeautifulSoup, PyCryptodome, Z3, Capstone, Unicorn, ropper, ROPGadget, pwntools, SymPy, gmpy2, Pillow, pyelftools, Scapy and sqlmap. `clite tools` checks actual availability and labels optional commands honestly.
 
