@@ -283,6 +283,7 @@ export function createApplication(options: { config?: Config; spawnSession?: Spa
         clearTimeout(handshakeTimer);
         let message;
         try { message = JSON.parse(raw.toString()); } catch { return ws.close(1008, "Invalid handshake"); }
+        if (!message || typeof message !== "object" || Array.isArray(message)) return ws.close(1008, "Invalid handshake");
         if (message.type !== "hello") return ws.close(1008, "Expected hello");
         try {
           if (message.token) {

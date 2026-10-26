@@ -136,6 +136,7 @@ export class SessionManager {
   message(session: Session, raw: { toString(): string }) {
     let message;
     try { message = JSON.parse(raw.toString()); } catch { return; }
+    if (!message || typeof message !== "object" || Array.isArray(message)) return;
     if (message.type === "resize") {
       session.terminal.resize(size(message.cols, 80, 20, 300), size(message.rows, 24, 8, 100));
     } else if (message.type === "input" && typeof message.data === "string" && message.data.length <= 16_384) {

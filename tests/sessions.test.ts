@@ -48,6 +48,9 @@ describe("session lifetime and recovery", () => {
   test("only input, explicit keepalive and team output refresh idle activity", async () => {
     const { manager, terminal, session } = await setup();
     session.lastActivityAt = 100;
+    for (const invalid of ["null", "[]", "true", "1", '"text"']) {
+      manager.message(session, Buffer.from(invalid));
+    }
     manager.message(session, Buffer.from('{"type":"resize","cols":100,"rows":30}'));
     expect(session.lastActivityAt).toBe(100);
     manager.message(session, Buffer.from('{"type":"ping"}'));

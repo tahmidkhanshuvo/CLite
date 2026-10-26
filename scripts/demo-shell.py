@@ -51,6 +51,8 @@ class DemoShell:
         if value.startswith("~/"):
             value = str(self.root / value[2:])
         candidate = self.cwd / value
+        if any(part.startswith(".") and part not in (".", "..") for part in Path(value).parts):
+            raise ValueError("Hidden paths are unavailable in public practice")
         # Reject links at every component, including links pointing inside HOME.
         current = candidate
         while current != self.root and current != current.parent:
@@ -78,6 +80,7 @@ class DemoShell:
         count = 0
         for directory, dirs, names in os.walk(self.root, followlinks=False):
             dirs[:] = [d for d in dirs if not Path(directory, d).is_symlink()]
+            count += len(dirs)
             for name in names:
                 item = Path(directory, name)
                 if not item.is_symlink():
