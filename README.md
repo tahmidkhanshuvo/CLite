@@ -86,7 +86,7 @@ score
 help
 ```
 
-Use `help` for supported commands and flags. Demo grep performs literal matching; demo jq supports `.` and nested object paths. Commands intentionally implement a small documented subset. Writes are limited to 1 MiB per file, 16 MiB total and 500 files; pipelines and reads are bounded. Uploads use the separately configured HTTP limit. A demo process has CPU/address-space limits. Team mode provides full Linux command behavior.
+Use `help` for supported commands and flags. Demo grep performs literal matching; demo jq supports `.` and nested object paths. Commands intentionally implement a small documented subset. Writes and uploads are limited to 1 MiB per file, 16 MiB total and 500 files; pipelines and reads are bounded. A demo process has CPU/address-space limits. Team mode provides full Linux command behavior.
 
 ## Sessions and deployment
 

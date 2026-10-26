@@ -104,6 +104,8 @@ export function createApplication(options: { config?: Config; spawnSession?: Spa
   const app = express();
   const server = http.createServer(app);
   const wss = new WebSocketServer({ noServer: true, maxPayload: 32 * 1024, perMessageDeflate: false });
+  const uploads = new Set<string>();
+  const exports = new Set<string>();
   let stopping = false;
 
   function issue(res: Response, mode: Mode, req: Request) {
@@ -190,16 +192,36 @@ export function createApplication(options: { config?: Config; spawnSession?: Spa
         return res.status(400).json({ error: "Use a filename with letters, numbers, dots, underscores or dashes (120 characters max)." });
       }
       const target = path.join(req.workspace.homeDir, name);
+      if (uploads.has(req.workspace.id)) return res.status(409).json({ error: "Another upload is in progress." });
+      uploads.add(req.workspace.id);
       try {
+        if (req.workspace.mode === "demo") {
+          let total = 0, count = 0;
+          const scan = async (dir: string): Promise<void> => {
+            for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+              const item = path.join(dir, entry.name);
+              if (entry.isDirectory()) await scan(item);
+              else if (entry.isFile()) { total += (await fs.stat(item)).size; count++; }
+            }
+          };
+          await scan(req.workspace.homeDir);
+          if (req.body.length > 1024 * 1024 || total + req.body.length > 16 * 1024 * 1024 || count >= 500) {
+            return res.status(413).json({ error: "Practice limit: 1 MiB per file, 16 MiB total, 500 files." });
+          }
+        }
         await fs.writeFile(target, req.body, { flag: "wx", mode: 0o600 });
         if (!WINDOWS) await fs.chown(target, config.uid, config.gid);
         req.workspace.lastActivityAt = Date.now();
         res.json({ name, bytes: req.body.length });
       } catch (error) {
         res.status(error.code === "EEXIST" ? 409 : 500).json({ error: error.code === "EEXIST" ? "That filename already exists. Rename the upload." : "Upload failed." });
+      } finally {
+        uploads.delete(req.workspace.id);
       }
     });
   app.get("/api/workspace/export", workspace, (req, res) => {
+    if (exports.has(req.workspace.id)) return res.status(409).json({ error: "An export is already in progress." });
+    exports.add(req.workspace.id);
     const child = spawn(PYTHON, ["-I", path.join(ROOT, "scripts", "export-workspace.py"), req.workspace.homeDir], {
       stdio: ["ignore", "pipe", "pipe"], env: WINDOWS ? { SystemRoot: process.env.SystemRoot, PATH: process.env.PATH } : { PATH: "/usr/bin:/bin" },
       ...(!WINDOWS ? { uid: config.uid, gid: config.gid } : {})
@@ -217,8 +239,9 @@ export function createApplication(options: { config?: Config; spawnSession?: Spa
     });
     res.on("drain", () => child.stdout.resume());
     res.on("close", () => child.kill());
-    child.on("error", () => { clearTimeout(timer); if (!res.headersSent) res.status(500).json({ error: "Workspace export unavailable." }); else res.destroy(); });
+    child.on("error", () => { exports.delete(req.workspace.id); clearTimeout(timer); if (!res.headersSent) res.status(500).json({ error: "Workspace export unavailable." }); else res.destroy(); });
     child.on("close", code => {
+      exports.delete(req.workspace.id);
       clearTimeout(timer);
       if (code !== 0) {
         if (!res.headersSent) res.status(413).json({ error: stderr.includes("limit") ? "Workspace exceeds export limit (50 MiB / 2000 files). Remove large artifacts first." : "Export failed. Retry after stopping file changes." });
