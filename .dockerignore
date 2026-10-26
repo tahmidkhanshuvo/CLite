@@ -14,4 +14,6 @@ tests
 docs
 **/__pycache__
 .env.*
+!.env.example
 package-lock.json
+.private

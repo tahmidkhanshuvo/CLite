@@ -15,9 +15,9 @@
         <span id="status" class="status">Disconnected</span>
         <span id="timer">--:--</span>
       </div>
-    </header>
-    <div class="session-panel">
-      <nav class="terminal-actions" aria-label="Workspace actions">
+      <details id="workspaceMenu" class="workspace-menu">
+        <summary>Workspace <span aria-hidden="true">⌄</span></summary>
+        <nav class="terminal-actions" aria-label="Workspace actions">
         <button id="keepAlive" type="button" disabled>Keep working</button>
         <button id="uploadButton" type="button" disabled>Upload file</button>
         <button id="exportButton" type="button" disabled>Download workspace</button>
@@ -26,15 +26,13 @@
         <button id="newSession" type="button" hidden>New session</button>
         <button id="endSession" type="button" disabled>End session</button>
         <input id="uploadFile" type="file" hidden>
-      </nav>
-      <p id="sessionMessage" class="banner" role="status">Built for ethical CTFs, lab practice, and owned learning environments.</p>
-    </div>
+        </nav>
+      </details>
+    </header>
+    <p id="sessionMessage" class="session-notice" role="status" hidden></p>
     <main id="terminal" aria-label="Interactive terminal"></main>
     <script src="/xterm/xterm.js"></script>
     <script src="/xterm/addon-fit.js"></script>
     <script src="/client.js?v=2"></script>
   </body>
 </html>
-<!-- CLITE_CASE_TRAIL
-case:bond-cufflink | base64:Q0xJVEV7bWFzdWRfcmFuYV9rZWVwc19oaXNfY29vbF9ib25kX2N1ZmZsaW5rX2NlYWZkOX0= | return to the practice terminal: check bond-cufflink FLAG
-END_CLITE_CASE_TRAIL -->

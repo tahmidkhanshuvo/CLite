@@ -8,7 +8,7 @@
   --line: #1d3b24;
   --accent: #40ff7a;
   --accent-2: #65e8ff;
-  --warn: #ffd166;
+  --warn: #efad58;
 }
 
 * {
@@ -358,16 +358,22 @@ h1 {
   height: 100dvh;
   overflow: hidden;
   display: grid;
-  grid-template-rows: 52px auto minmax(0, 1fr);
+  grid-template-rows: 48px minmax(0, 1fr);
   min-width: 0;
 }
 
 .terminal-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 8px 12px;
+  display: grid;
+  gap: 3px;
+  padding: 7px;
   background: var(--panel);
+  position: absolute;
+  left: 0;
+  top: calc(100% + 9px);
+  min-width: 210px;
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 35px #000a;
+  z-index: 10;
 }
 
 .terminal-actions button {
@@ -376,13 +382,29 @@ h1 {
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--line);
-  padding: 8px 10px;
+  padding: 10px 12px;
+  text-align: left;
   cursor: pointer;
 }
 
 .terminal-actions button:disabled { opacity: 0.45; cursor: default; }
 .terminal-actions button:focus-visible { outline: 2px solid var(--accent); }
-.session-panel .banner { margin: 0; font-size: 0.78rem; color: var(--muted); }
+.terminal-actions #endSession { color: var(--warn); }
+.workspace-menu { position: relative; flex: 0 0 auto; order: 1; font-size: 0.78rem; }
+.workspace-menu summary { cursor: pointer; list-style: none; color: var(--muted); padding: 7px 9px; border: 1px solid var(--line); }
+.workspace-menu summary::-webkit-details-marker { display: none; }
+.workspace-menu[open] summary, .workspace-menu summary:hover { color: var(--accent); }
+.workspace-menu summary:focus-visible { outline: 1px solid var(--warn); }
+.session-notice { position: fixed; z-index: 12; bottom: 18px; right: 18px; max-width: min(540px, calc(100vw - 36px)); margin: 0; padding: 10px 14px; background: #151006; border: 1px solid #5b4120; color: var(--warn); font-size: 0.78rem; line-height: 1.5; box-shadow: 0 6px 25px #0009; }
+.terminal-page .topbar { flex-direction: row; align-items: center; flex-wrap: nowrap; padding: 0 12px; gap: 10px; }
+.terminal-page .status-line { order: 2; flex: 0 1 auto; margin-left: auto; flex-wrap: nowrap; width: auto; justify-content: flex-end; gap: 10px; font-size: 0.78rem; }
+.terminal-page #timer { color: var(--warn); font-variant-numeric: tabular-nums; }
+@media (max-width: 720px) {
+  .terminal-page { grid-template-rows: 48px minmax(0, 1fr) !important; }
+  .terminal-page .status-line { gap: 6px; font-size: 0.7rem; }
+  .terminal-page .topbar { flex-direction: row; padding: 0 8px; }
+  .workspace-menu summary { padding: 6px; }
+}
 
 .topbar {
   display: flex;
@@ -655,9 +677,3 @@ h1 {
     display: none;
   }
 }
-/* CLITE_CASE_TRAIL
-case:shitalakshya-signal | base64:Q0xJVEV7bWFzdWRfcmFuYV9rZWVwc19oaXNfY29vbF9zaGl0YWxha3NoeWFfc2lnbmFsXzJiNjhlN30= | return to the practice terminal: check shitalakshya-signal FLAG
-case:jamdani-thread | base64:Q0xJVEV7d2FrYW5kYV9ndWFyZHNfdGhlX2FyY2hpdmVfamFtZGFuaV90aHJlYWRfYjM3ZjVjfQ== | return to the practice terminal: check jamdani-thread FLAG
-case:kuakata-horizon | base64:Q0xJVEV7dGhlX3dvcm1ob2xlX2xlYWRzX3RvX2JlbmdhbF9rdWFrYXRhX2hvcml6b25fNTQwMjI0fQ== | return to the practice terminal: check kuakata-horizon FLAG
-case:dhanmondi-lake | base64:Q0xJVEV7a2FrYWJhYnVfa2VlcHNfdGhlX21hcF9kaGFubW9uZGlfbGFrZV9lYTcyMWZ9 | return to the practice terminal: check dhanmondi-lake FLAG
-END_CLITE_CASE_TRAIL */

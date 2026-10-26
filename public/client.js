@@ -2,7 +2,7 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const mode = location.pathname.startsWith("/team") ? "team" : "demo";
-  $("modeLabel").textContent = mode === "team" ? "Team Mode" : "Public Practice";
+  $("modeLabel").textContent = mode === "team" ? "Team" : "Practice";
   // Tokens belong to this tab; shared cookies authenticate the browser, not a specific shell.
   const storageKey = `clite-session-${mode}`;
   let token = sessionStorage.getItem(storageKey) || "";
@@ -46,7 +46,13 @@
     $("reconnect").hidden = connected || stopped;
     $("newSession").hidden = !stopped;
   }
-  function notice(text) { $("sessionMessage").textContent = text; }
+  let noticeTimer;
+  function notice(text, persistent = false) {
+    clearTimeout(noticeTimer);
+    $("sessionMessage").textContent = text;
+    $("sessionMessage").hidden = !text;
+    if (!persistent) noticeTimer = setTimeout(() => { $("sessionMessage").hidden = true; }, 7000);
+  }
   function state(message) {
     clockOffset = message.serverNow - Date.now();
     expiresAt = message.expiresAt;
@@ -55,12 +61,17 @@
   }
   function duration(ms) {
     const seconds = Math.max(0, Math.ceil(ms / 1000));
-    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+    const minutes = Math.floor(seconds / 60);
+    return minutes >= 60
+      ? `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`
+      : `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
   }
   function updateTimer() {
     if (!expiresAt) return;
     const now = Date.now() + clockOffset;
-    $("timer").textContent = `Idle ${duration(idleExpiresAt - now)} / session ${duration(expiresAt - now)}`;
+    $("timer").textContent = duration(Math.min(idleExpiresAt, expiresAt) - now);
+    $("timer").title = `Idle: ${duration(idleExpiresAt - now)} · Session: ${duration(expiresAt - now)}`;
+    $("timer").setAttribute("aria-label", $("timer").title);
     $("timer").classList.toggle("warning", Math.min(idleExpiresAt, expiresAt) - now < 120000);
   }
   setInterval(updateTimer, 1000);
@@ -86,14 +97,14 @@
         if (message.resumed) term.reset();
         status(message.resumed ? "Resumed" : "Connected", true);
         state(message);
-        notice(mode === "demo" ? "A case is waiting in the margins. Type case or help. Download your notes before expiry." : "Use clite help. Download workspaces before expiry or server restarts.");
+        notice("");
         fit();
         term.focus();
       } else if (message.type === "state") {
         state(message);
       } else if (message.type === "warning") {
         state(message);
-        notice(message.message);
+        notice(message.message, true);
       } else if (["disconnect", "expired", "error"].includes(message.type)) {
         notice(message.reason || message.message);
         term.writeln(`\r\n${message.reason || message.message}`);
@@ -149,6 +160,15 @@
     finally { $("exportButton").disabled = socket?.readyState !== WebSocket.OPEN; }
   });
   $("uploadButton").addEventListener("click", () => $("uploadFile").click());
+  $("workspaceMenu").addEventListener("click", event => {
+    if (event.target.closest("button")) $("workspaceMenu").open = false;
+  });
+  document.addEventListener("click", event => {
+    if (!$("workspaceMenu").contains(event.target)) $("workspaceMenu").open = false;
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") { $("workspaceMenu").open = false; term.focus(); }
+  });
   $("uploadFile").addEventListener("change", async event => {
     const file = event.target.files[0];
     if (!file) return;

@@ -3,12 +3,7 @@ FROM debian:trixie-slim
 COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 COPY --from=bun /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-ENV PORT=7860 NODE_ENV=production \
-    MAX_TEAM_SESSIONS=5 MAX_PUBLIC_SESSIONS=4 \
-    PUBLIC_TIMEOUT_MINUTES=30 TEAM_TIMEOUT_MINUTES=480 \
-    PUBLIC_IDLE_TIMEOUT_MINUTES=15 TEAM_IDLE_TIMEOUT_MINUTES=60 \
-    RECONNECT_GRACE_SECONDS=300 CTF_UID=1001 CTF_GID=1001 \
-    DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Default profile fits a small host. Optional packages add image size, not extra services.
 ARG INSTALL_HEAVY_TOOLS=false
@@ -52,12 +47,16 @@ RUN python3 -m venv /opt/ctf-python \
          if [ -f "/opt/ctf-python/bin/$cmd" ]; then ln -sf "/opt/ctf-python/bin/$cmd" "/usr/local/bin/$cmd"; fi; \
        done
 
-RUN groupadd --gid 1001 ctf \
-    && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash ctf \
+COPY .env.example /tmp/clite-defaults.env
+RUN set -a && . /tmp/clite-defaults.env \
+    && groupadd --gid "$CTF_GID" ctf \
+    && useradd --uid "$CTF_UID" --gid "$CTF_GID" --create-home --shell /bin/bash ctf \
+    && groupadd --gid "$DEMO_GID" practice \
+    && useradd --uid "$DEMO_UID" --gid "$DEMO_GID" --no-create-home --shell /usr/sbin/nologin practice \
     && rm -f /usr/bin/sudo /bin/su /usr/bin/su
 
 WORKDIR /app
-COPY package.json bun.lock ./
+COPY package.json bun.lock .env.example ./
 RUN bun install --frozen-lockfile --production
 COPY server.ts tsconfig.json ./
 COPY lib ./lib
@@ -72,8 +71,7 @@ RUN sed -i 's/\r$//' scripts/*.py \
     && chmod 0711 /tmp/ctf-web-cli /tmp/ctf-web-cli/sessions \
     && chmod 0755 /app /opt/ctf-python
 
-EXPOSE 7860
 HEALTHCHECK --interval=30s --timeout=3s --start-period=15s \
-    CMD curl -fsS "http://127.0.0.1:${PORT}/healthz" || exit 1
+    CMD bun scripts/healthcheck.ts
 ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
 CMD ["bun", "run", "server.ts"]

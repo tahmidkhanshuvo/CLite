@@ -11,7 +11,10 @@ import { loadConfig } from "../lib/config";
 test.skipIf(process.platform !== "linux" || !existsSync("/opt/ctf-python"))("native Linux team and demo PTYs", async () => {
   const config = loadConfig({ TEAM_KEY: "native-linux-test-secret" });
   config.baseDir = await fs.mkdtemp(path.join(os.tmpdir(), "clite-linux-"));
-  const runtime = createApplication({ config });
+  const runtime = createApplication({ config, quest: {
+    entries: [], homeFiles: { "fixture.txt": Buffer.from("TkFUSVZFX0RFTU9fT0s=").toString("base64") },
+    webFiles: {}, injections: {}, headers: {}
+  } });
   await new Promise<void>(resolve => runtime.server.listen(0, "127.0.0.1", resolve));
   const origin = `http://127.0.0.1:${(runtime.server.address() as {port: number}).port}`;
   const sockets: WebSocket[] = [];
@@ -36,15 +39,15 @@ test.skipIf(process.platform !== "linux" || !existsSync("/opt/ctf-python"))("nat
       await sessionReady;
       const command = mode === "team"
         ? "id -u; pip --version; python3 -c 'import os,sys,pwn,z3,Crypto,sympy,gmpy2; assert sys.prefix == os.path.join(os.environ[\"HOME\"],\".venv\"); assert \"TEAM_KEY\" not in os.environ; print(\"NATIVE_TEAM_OK\")'\r"
-        : "cat challenges/encoded.txt | base64 -d\r";
+        : "cat fixture.txt | base64 -d\r";
       ws.send(JSON.stringify({ type: "input", data: command }));
-      const marker = mode === "team" ? "NATIVE_TEAM_OK" : "CLITE{layers_unwrapped}";
+      const marker = mode === "team" ? "NATIVE_TEAM_OK" : "NATIVE_DEMO_OK";
       const deadline = Date.now() + 15_000;
       // The input itself contains the marker. Wait for an independently emitted line.
       while (!output.includes("\r\n" + marker) && Date.now() < deadline) await Bun.sleep(50);
       expect(output).toContain("\r\n" + marker);
       if (mode === "team") {
-        expect(output.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, "").split("\n").some(line => line.trim() === "1001")).toBe(true);
+        expect(output.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, "").split("\n").some(line => line.trim() === String(config.uid))).toBe(true);
         expect(output).not.toContain("Traceback");
       }
       ws.send(JSON.stringify({ type: "end" }));

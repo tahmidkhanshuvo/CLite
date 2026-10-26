@@ -7,6 +7,7 @@ import codecs
 import difflib
 import fnmatch
 import hashlib
+import hmac
 import json
 import os
 from pathlib import Path
@@ -22,15 +23,13 @@ ASCII = r"""  ____ _     _ _
 | |   | |   | | __/ _ \
 | |___| |___| | ||  __/
  \____|_____|_|\__\___|"""
-STORY = json.loads((Path(__file__).resolve().parents[1] / "data" / "story.json").read_text(encoding="utf-8"))
-STORY_BY_ID = {entry["id"]: entry for entry in STORY}
 HELP = """CLite 2.0 public practice shell
 Navigation: pwd, ls [-a], cd, tree, find [path] [-name glob]
 Files: cat, head [-n N], tail [-n N], touch, mkdir [-p], cp, mv, rm
 Text: echo [-n], grep [-invc] TEXT [file] (literal search), sort [-ru], uniq [-c], wc [-lwc], diff, rev, cut, tr
 Bytes: strings, xxd [-r -p], base64 [-d], base32 [-d], hex [-d], rot13, url [-d], ascii [-d], xor HEXKEY, caesar SHIFT
 Data: jq .path [file], md5sum, sha1sum, sha256sum, file, stat
-Practice: case, challenges, hint [ID], check ID FLAG, score, help, clear, exit
+Practice: case, hint [ID], exhibit ID RESPONSE, check ID FLAG, score, help, clear, exit
 Use pipelines and redirects: cat challenges/encoded.txt | base64 -d > answer.txt
 Create notes: echo 'my findings' >> notes.txt
 Read CASEFILE.md for the detective trail. The next lead appears when evidence is accepted.
@@ -39,13 +38,6 @@ Upload files and download this workspace with the toolbar.
 All paths stay in your workspace. No host commands, network, Python execution, or package installs.
 Team mode provides the full Linux toolchain. This demo implements the commands listed above.
 """
-CHALLENGES = {
-    "encoding": ("Decode challenges/encoded.txt", "Pipe the file through base64 -d.", "CLITE{layers_unwrapped}"),
-    "rotation": ("Decode challenges/rotated.txt", "Try the rot13 helper.", "CLITE{rotate_your_view}"),
-    "logs": ("Find the successful flag request in challenges/access.log", "grep 200 challenges/access.log", "CLITE{follow_the_logs}"),
-    "json": ("Read the flag nested inside challenges/response.json", "jq .data.flag challenges/response.json", "CLITE{structured_evidence}"),
-    "bytes": ("Inspect challenges/artifact.bin for printable evidence", "strings challenges/artifact.bin", "CLITE{strings_tell_stories}"),
-}
 
 
 class DemoShell:
@@ -53,6 +45,11 @@ class DemoShell:
         self.root = Path(root).resolve()
         self.cwd = self.root
         self.solved = set()
+        metadata = self.root / ".case-data.json"
+        private = json.loads(metadata.read_text(encoding="utf-8")) if metadata.is_file() else {}
+        self.story = private.get("entries", [])
+        self.progress_key = bytes.fromhex(private.get("progressKey", ""))
+        self.story_by_id = {entry["id"]: entry for entry in self.story}
         self.load_progress()
 
     def load_progress(self):
@@ -60,22 +57,29 @@ class DemoShell:
         if progress.is_file() and not progress.is_symlink() and progress.stat().st_size < 16384:
             try:
                 saved = json.loads(progress.read_text(encoding="utf-8"))
-                if isinstance(saved, list):
-                    self.solved = {key for key in saved if isinstance(key, str) and (key in STORY_BY_ID or key in CHALLENGES)}
+                if isinstance(saved, dict) and isinstance(saved.get("solved"), list):
+                    selected = {key for key in saved["solved"] if isinstance(key, str) and key in self.story_by_id}
+                    if hmac.compare_digest(str(saved.get("signature", "")), self.progress_signature(selected)):
+                        self.solved = selected
             except (OSError, ValueError):
                 pass
 
     def current_case(self):
-        return next((entry for entry in STORY if entry["id"] not in self.solved), None)
+        return next((entry for entry in self.story if entry["id"] not in self.solved), None)
 
     def case_status(self):
         entry = self.current_case()
         if not entry:
             return "The missing dispatch is home. Tahmid's green cursor blinks again. Case closed."
-        return f"{entry['act']}\n{entry['title']}\nLead: {entry['location']} ({entry['surface']})\nUse hint {entry['id']} for a nudge; submit with check {entry['id']} FLAG."
+        context = entry.get("brief", "")
+        reading = f"Read: casebook/{entry['id']}/README.md\n" if entry["surface"] == "workspace" else ""
+        return f"{entry['act']}\n{entry['title']}\n\n{context}\n\n{reading}Lead: {entry['location']} ({entry['surface']})\nUse hint {entry['id']} for a nudge; submit with check {entry['id']} FLAG."
 
     def save_progress(self):
-        self.write("~/case-progress.json", json.dumps(sorted(self.solved)).encode())
+        self.write("~/case-progress.json", json.dumps({"solved": sorted(self.solved), "signature": self.progress_signature(self.solved)}).encode())
+
+    def progress_signature(self, solved):
+        return hmac.new(self.progress_key, json.dumps(sorted(solved), separators=(",", ":")).encode(), hashlib.sha256).hexdigest()
 
     def path(self, value="."):
         if value in ("~", "$HOME"):
@@ -94,6 +98,11 @@ class DemoShell:
         resolved = candidate.resolve()
         if not resolved.is_relative_to(self.root):
             raise ValueError("Path must stay inside this workspace")
+        relative = resolved.relative_to(self.root).parts
+        if len(relative) > 1 and relative[0] == "casebook":
+            active = self.current_case()
+            if relative[1] not in self.solved and (not active or relative[1] != active["id"]):
+                raise ValueError("That scene is still sealed. Follow your current lead with case.")
         return resolved
 
     def read(self, value):
@@ -127,7 +136,7 @@ class DemoShell:
     def listing(self, root):
         entries = []
         for directory, dirs, names in os.walk(root, followlinks=False):
-            dirs[:] = sorted(d for d in dirs if not Path(directory, d).is_symlink() and not d.startswith("."))
+            dirs[:] = sorted(d for d in dirs if not Path(directory, d).is_symlink() and not d.startswith(".") and (Path(directory) != self.root / "casebook" or d in self.solved or d == (self.current_case() or {}).get("id")))
             for name in sorted(dirs + names):
                 entry = Path(directory, name)
                 if not entry.is_symlink():
@@ -213,7 +222,7 @@ class DemoShell:
             if not target.is_dir():
                 return out(target.name)
             if cmd == "ls":
-                return out("  ".join(p.name + ("/" if p.is_dir() else "") for p in sorted(target.iterdir()) if ("-a" in flags or "-la" in flags or not p.name.startswith("."))))
+                return out("  ".join(p.name + ("/" if p.is_dir() else "") for p in sorted(target.iterdir()) if not p.name.startswith(".") and (target != self.root / "casebook" or p.name in self.solved or p.name == (self.current_case() or {}).get("id"))))
             entries = self.listing(target)
             if cmd == "find" and "-name" in args:
                 pattern = args[args.index("-name") + 1]
@@ -384,12 +393,40 @@ class DemoShell:
             return out(self.case_status())
         if cmd == "hint":
             key = args[0] if args else (self.current_case() or {}).get("id", "")
-            return out(STORY_BY_ID[key]["hint"] if key in STORY_BY_ID else CHALLENGES[key][1])
+            if key not in self.solved and key != (self.current_case() or {}).get("id"):
+                raise ValueError("That scene is still sealed. Follow your current lead.")
+            return out(self.story_by_id[key]["hint"])
+        if cmd == "exhibit":
+            if len(args) < 2:
+                raise ValueError("Usage: exhibit CASE-ID 'RESPONSE'")
+            entry = self.story_by_id.get(args[0])
+            if not entry or entry != self.current_case():
+                raise ValueError("Only the current scene's exhibit is open")
+            oracle = entry.get("oracle")
+            if not oracle:
+                raise ValueError("This scene uses recovered evidence directly with check")
+            response = " ".join(args[1:]).strip()
+            accepted = False
+            if oracle["kind"] == "ret2win":
+                payload = bytes.fromhex(response)
+                offset = oracle["offset"]
+                accepted = len(payload) >= offset + 8 and int.from_bytes(payload[offset:offset+8], "little") == oracle["address"]
+            elif oracle["kind"] == "jwt":
+                parts = response.split(".")
+                if len(parts) == 3 and parts[2] == "":
+                    decode = lambda part: json.loads(base64.urlsafe_b64decode(part + "=" * (-len(part) % 4)))
+                    header, claims = decode(parts[0]), decode(parts[1])
+                    accepted = isinstance(header, dict) and isinstance(claims, dict) and header.get("alg") == "none" and claims.get("role") == oracle["subject"] and claims.get("case") == entry["id"]
+            else:
+                accepted = hmac.compare_digest(hashlib.sha256(response.lower().encode()).hexdigest(), oracle["responseHash"])
+            if accepted:
+                return out("The exhibit opens. Recovered seal: " + base64.b64decode(oracle["reward"]).decode())
+            return out("The exhibit stays closed. Re-check the evidence and its required response format.")
         if cmd == "check":
             if len(args) != 2:
                 raise ValueError("Usage: check ID 'CLITE{flag}'")
-            if args[0] in STORY_BY_ID:
-                entry = STORY_BY_ID[args[0]]
+            if args[0] in self.story_by_id:
+                entry = self.story_by_id[args[0]]
                 if entry != self.current_case() and entry["id"] not in self.solved:
                     return out("The route is incomplete. Use case to follow your current lead.")
                 if hashlib.sha256(args[1].encode()).hexdigest() == entry["sha256"]:
@@ -397,11 +434,7 @@ class DemoShell:
                     self.save_progress()
                     return out("Evidence accepted.\n\n" + self.case_status())
                 return out("That statement does not match the evidence. Try hint " + entry["id"])
-            if args[1] == CHALLENGES[args[0]][2]:
-                self.solved.add(args[0])
-                self.save_progress()
-                return out(f"Correct! Evidence recovered: {len(self.solved)}.")
-            return out("Not quite. Try hint " + args[0])
+            return out("Unknown case. Type case to inspect your current lead.")
         if cmd == "score":
             return out(f"Evidence recovered: {len(self.solved)}.\n" + self.case_status())
         raise ValueError(f"{cmd}: unavailable in practice mode. Type help; use Team Mode for full Linux tools.")
@@ -413,7 +446,7 @@ def main():
     except ImportError:
         pass
     shell = DemoShell(Path.cwd())
-    print("\n" + ASCII + "\n\nCLite 2.0 | Public CTF practice | Tahmid Khan\nA case is waiting in the margins. Type case or read CASEFILE.md.\nType help for tools. Files stay in your temporary workspace.\n")
+    print("\n" + ASCII + "\n\nCLite 2.0 | Tahmid Khan\n\033[38;5;215mA case is waiting. Type case.\033[0m\n")
     while True:
         try:
             shown = shell.cwd.relative_to(shell.root).as_posix()

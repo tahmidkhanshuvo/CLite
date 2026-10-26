@@ -12,7 +12,7 @@ import { WebSocketServer, type WebSocket } from "ws";
 import { loadConfig, type Config } from "./lib/config";
 import { SessionManager, send, safeEqual, size, type SpawnSession, type Mode } from "./lib/sessions";
 import { spawnTerminal } from "./lib/terminal";
-import storyHeaders from "./data/story-headers.json";
+import { loadQuest, type Quest } from "./lib/quest";
 
 dotenv.config({ quiet: true });
 
@@ -38,10 +38,8 @@ export LD_LIBRARY_PATH="$HOME/.local/opt/sysroot/usr/lib/$__clite_arch:$HOME/.lo
 export PS1='\\[\\033[1;32m\\]clite:\\w$ \\[\\033[0m\\]'
 shopt -s histappend checkwinsize
 alias ll='ls -lah' python='python3' bat='batcat' fd='fdfind'
-printf '\\nCLite 2.0 | portable CTF workspace | Tahmid Khan\\n'
-printf 'Start: clite help | clite tools | clite doctor | cat README.md\\n'
-printf 'Python venv is active. pip install and pipx install use this session only.\\n'
-printf 'Reconnect preserves this shell briefly. Download workspace before expiry or deploy.\\n\\n'
+printf '\\nCLite 2.0 | Tahmid Khan\\n'
+printf '\\033[38;5;215mTeam shell ready. Type clite help.\\033[0m\\n\\n'
 `;
 
 async function chownTree(target: string, uid: number, gid: number) {
@@ -53,7 +51,9 @@ async function chownTree(target: string, uid: number, gid: number) {
   }
 }
 
-async function defaultSpawn(config: Config, mode: Mode, homeDir: string, cols: number, rows: number) {
+async function defaultSpawn(config: Config, quest: Quest | null, mode: Mode, homeDir: string, cols: number, rows: number) {
+  const uid = mode === "demo" ? config.demoUid : config.uid;
+  const gid = mode === "demo" ? config.demoGid : config.gid;
   await fs.cp(path.join(ROOT, "templates", mode), homeDir, { recursive: true });
   let shell, args;
   if (mode === "team") {
@@ -73,6 +73,15 @@ async function defaultSpawn(config: Config, mode: Mode, homeDir: string, cols: n
       });
     }
   } else {
+    if (!quest) throw new Error("Public quest requires QUEST_MASTER_KEY in the private environment.");
+    for (const [relative, content] of Object.entries(quest.homeFiles)) {
+      const target = path.resolve(homeDir, relative);
+      if (!target.startsWith(homeDir + path.sep)) throw new Error("Invalid quest workspace path");
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.writeFile(target, Buffer.from(content, "base64"));
+    }
+    const progressKey = crypto.createHash("sha256").update("clite-progress:" + config.questKey).digest("hex");
+    await fs.writeFile(path.join(homeDir, ".case-data.json"), JSON.stringify({ entries: quest.entries, progressKey }), { mode: 0o600 });
     shell = PYTHON;
     args = ["-I", "-u", path.join(ROOT, "scripts", "demo-shell.py")];
   }
@@ -87,28 +96,29 @@ async function defaultSpawn(config: Config, mode: Mode, homeDir: string, cols: n
     await fs.writeFile(path.join(homeDir, ".venv", "bin", "pip"), `#!${homeDir}/.venv/bin/python\nimport sys\nfrom pip._internal.cli.main import main\nsys.exit(main())\n`, { mode: 0o755 });
   }
   const env: Record<string, string | undefined> = {
-    HOME: homeDir, USER: "ctf", LOGNAME: "ctf", SHELL: "/bin/bash",
+    HOME: homeDir, USER: mode === "demo" ? "practice" : "ctf", LOGNAME: mode === "demo" ? "practice" : "ctf", SHELL: "/bin/bash",
     TERM: "xterm-256color", LANG: "C.UTF-8", LC_ALL: "C.UTF-8",
     PATH: WINDOWS ? process.env.PATH : "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
     CLITE_MODE: mode, TMPDIR: path.join(homeDir, ".tmp")
   };
   await fs.mkdir(env.TMPDIR!, { mode: 0o700 });
-  if (!WINDOWS) await chownTree(homeDir, config.uid, config.gid);
+  if (!WINDOWS) await chownTree(homeDir, uid, gid);
   if (WINDOWS) {
     env.SystemRoot = process.env.SystemRoot;
     env.TEMP = env.TMP = env.TMPDIR;
   }
   const command = WINDOWS ? [shell, ...args] : [
-    "/usr/bin/setpriv", `--reuid=${config.uid}`, `--regid=${config.gid}`, "--clear-groups", "--no-new-privs",
+    "/usr/bin/setpriv", `--reuid=${uid}`, `--regid=${gid}`, "--clear-groups", "--no-new-privs",
     "/usr/bin/prlimit", `--nproc=${config.maxProcesses}`, "--nofile=1024", `--fsize=${config.maxFileBytes}`, "--core=0",
     ...(mode === "demo" ? ["--as=134217728", "--cpu=30"] : []), "--", shell, ...args
   ];
   return spawnTerminal(command, homeDir, env, cols, rows);
 }
 
-export function createApplication(options: { config?: Config; spawnSession?: SpawnSession } = {}) {
+export function createApplication(options: { config?: Config; spawnSession?: SpawnSession; quest?: Quest | null } = {}) {
   const config = options.config || loadConfig();
-  const manager = new SessionManager(config, options.spawnSession || ((...args) => defaultSpawn(config, ...args)));
+  const quest = options.quest !== undefined ? options.quest : loadQuest(config.questKey);
+  const manager = new SessionManager(config, options.spawnSession || ((...args) => defaultSpawn(config, quest, ...args)));
   const signingKey = crypto.randomBytes(32);
   const app = express();
   const server = http.createServer(app);
@@ -148,11 +158,18 @@ export function createApplication(options: { config?: Config; spawnSession?: Spa
       "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
       "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; font-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
       "Cache-Control": "no-store" });
-    res.set((storyHeaders as Record<string, Record<string, string>>)[req.path] || {});
+    res.set(quest?.headers[req.path] || {});
     next();
   });
+  app.use((req, res, next) => {
+    const encoded = quest?.webFiles[req.path];
+    if (!encoded) return next();
+    res.type(path.extname(req.path)).send(Buffer.from(encoded, "base64"));
+  });
   app.get("/.well-known/security.txt", (req, res) => res.type("text/plain").sendFile(path.join(ROOT, "public", ".well-known", "security.txt"), { dotfiles: "allow" }));
-  app.get("/healthz", (req, res) => res.status(stopping ? 503 : 200).json({ status: stopping ? "stopping" : "ok", version: "2.0.0" }));
+  app.get("/healthz", (req, res) => res.status(stopping ? 503 : 200).json({
+    status: stopping ? "stopping" : "ok", version: "2.0.0", revision: process.env.RENDER_GIT_COMMIT || undefined
+  }));
   app.use(rateLimit({ windowMs: 60_000, limit: 180, standardHeaders: true, legacyHeaders: false }));
   const authLimit = rateLimit({ windowMs: 15 * 60_000, limit: 15, standardHeaders: true, legacyHeaders: false });
   app.post("/api/team/login", authLimit, express.json({ limit: "2kb" }), (req, res) => {
@@ -173,9 +190,17 @@ export function createApplication(options: { config?: Config; spawnSession?: Spa
     "/xterm/addon-fit.js": "@xterm/addon-fit/lib/addon-fit.js"
   })) app.get(url, (req, res) => res.sendFile(path.join(ROOT, "node_modules", file)));
 
-  app.get("/demo", (req, res) => {
+  async function page(res: Response, file: string, route: string) {
+    const content = await fs.readFile(path.join(ROOT, "public", file), "utf8");
+    const notes = quest?.injections[route] || [];
+    const margin = !notes.length ? "" : file.endsWith(".css") ? `\n/* ${notes.join("\n")} */\n` : `\n<!-- ${notes.join("\n")} -->\n`;
+    res.type(path.extname(file)).send(content + margin);
+  }
+  app.get("/", async (req, res) => page(res, "index.html", "/"));
+  app.get("/style.css", async (req, res) => page(res, "style.css", "/style.css"));
+  app.get("/demo", async (req, res) => {
     if (!identity(req, "demo")) issue(res, "demo", req);
-    res.sendFile(path.join(ROOT, "public", "terminal.html"));
+    await page(res, "terminal.html", "/demo");
   });
   app.get("/team", (req, res) => {
     // Legacy links exchange the key once, then scrub it from subsequent URLs.
@@ -221,7 +246,7 @@ export function createApplication(options: { config?: Config; spawnSession?: Spa
           }
         }
         await fs.writeFile(target, req.body, { flag: "wx", mode: 0o600 });
-        if (!WINDOWS) await fs.chown(target, config.uid, config.gid);
+        if (!WINDOWS) await fs.chown(target, req.workspace.mode === "demo" ? config.demoUid : config.uid, req.workspace.mode === "demo" ? config.demoGid : config.gid);
         req.workspace.lastActivityAt = Date.now();
         res.json({ name, bytes: req.body.length });
       } catch (error) {
@@ -233,9 +258,9 @@ export function createApplication(options: { config?: Config; spawnSession?: Spa
   app.get("/api/workspace/export", workspace, (req, res) => {
     if (exports.has(req.workspace.id)) return res.status(409).json({ error: "An export is already in progress." });
     exports.add(req.workspace.id);
-    const child = spawn(PYTHON, ["-I", path.join(ROOT, "scripts", "export-workspace.py"), req.workspace.homeDir], {
+    const child = spawn(PYTHON, ["-I", path.join(ROOT, "scripts", "export-workspace.py"), req.workspace.homeDir, req.workspace.mode], {
       stdio: ["ignore", "pipe", "pipe"], env: WINDOWS ? { SystemRoot: process.env.SystemRoot, PATH: process.env.PATH } : { PATH: "/usr/bin:/bin" },
-      ...(!WINDOWS ? { uid: config.uid, gid: config.gid } : {})
+      ...(!WINDOWS ? { uid: req.workspace.mode === "demo" ? config.demoUid : config.uid, gid: req.workspace.mode === "demo" ? config.demoGid : config.gid } : {})
     });
     let started = false;
     let stderr = "";

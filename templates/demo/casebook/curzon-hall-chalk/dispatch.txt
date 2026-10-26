@@ -1,3 +1,0 @@
-courier=A status=cancelled evidence=decoy
-courier=B status=verified evidence=CLITE{bangla_letters_leave_tracks_curzon_hall_chalk_a722b9}
-courier=C status=pending evidence=wrong_turn

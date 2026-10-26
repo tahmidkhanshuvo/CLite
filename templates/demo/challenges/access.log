@@ -1,4 +1,0 @@
-10.0.0.3 GET /index.html 200
-10.0.0.4 GET /admin 403
-10.0.0.4 GET /flag/CLITE{follow_the_logs} 200
-10.0.0.5 GET /flag/decoy 404

@@ -24,3 +24,4 @@ Thumbs.db
 Dockerfile.local
 __pycache__/
 *.pyc
+.private/

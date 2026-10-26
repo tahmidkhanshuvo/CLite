@@ -10,12 +10,14 @@ MAX_BYTES = 50 * 1024 * 1024
 MAX_FILES = 2000
 
 
-def files(root):
+def files(root, practice=False):
     total = 0
     selected = []
     for directory, dirs, names in os.walk(root, followlinks=False):
-        dirs[:] = sorted(d for d in dirs if d not in EXCLUDED and not Path(directory, d).is_symlink())
+        dirs[:] = sorted(d for d in dirs if d not in EXCLUDED and not (practice and d == "casebook") and not Path(directory, d).is_symlink())
         for name in sorted(names):
+            if name == ".case-data.json":
+                continue
             target = Path(directory, name)
             info = target.lstat()
             if not stat.S_ISREG(info.st_mode):
@@ -27,8 +29,8 @@ def files(root):
     return selected
 
 
-def export(root, output):
-    selected = files(root)
+def export(root, output, practice=False):
+    selected = files(root, practice)
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_STORED) as archive:
         total = 0
         for target in selected:
@@ -47,7 +49,7 @@ def export(root, output):
 
 if __name__ == "__main__":
     try:
-        export(Path(sys.argv[1]).resolve(), sys.stdout.buffer)
+        export(Path(sys.argv[1]).resolve(), sys.stdout.buffer, len(sys.argv) > 2 and sys.argv[2] == "demo")
     except (OSError, ValueError) as error:
         print(str(error), file=sys.stderr)
         sys.exit(1)
