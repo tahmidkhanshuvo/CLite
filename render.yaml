@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: clite
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: TEAM_KEY
+        generateValue: true
+      - key: TRUST_PROXY
+        value: "1"
+      - key: MAX_TEAM_SESSIONS
+        value: "5"
+      - key: TEAM_TIMEOUT_MINUTES
+        value: "480"
+      - key: TEAM_IDLE_TIMEOUT_MINUTES
+        value: "60"

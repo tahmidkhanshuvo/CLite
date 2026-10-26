@@ -1,145 +1,63 @@
-FROM node:current-trixie-slim
+FROM oven/bun:1.4.4 AS bun
+FROM debian:trixie-slim
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
+COPY --from=bun /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-ENV PORT=7860 \
-    NODE_ENV=production \
-    TEAM_KEY=change-me \
-    MAX_TEAM_SESSIONS=5 \
-    MAX_PUBLIC_SESSIONS=2 \
-    PUBLIC_TIMEOUT_MINUTES=10 \
-    TEAM_TIMEOUT_MINUTES=180 \
-    IDLE_TIMEOUT_MINUTES=10 \
-    CTF_UID=1001 \
-    CTF_GID=1001 \
-    PIPX_HOME=/opt/pipx \
-    PIPX_BIN_DIR=/usr/local/bin
+ENV PORT=7860 NODE_ENV=production \
+    MAX_TEAM_SESSIONS=5 MAX_PUBLIC_SESSIONS=4 \
+    PUBLIC_TIMEOUT_MINUTES=30 TEAM_TIMEOUT_MINUTES=480 \
+    PUBLIC_IDLE_TIMEOUT_MINUTES=15 TEAM_IDLE_TIMEOUT_MINUTES=60 \
+    RECONNECT_GRACE_SECONDS=300 CTF_UID=1001 CTF_GID=1001 \
+    DEBIAN_FRONTEND=noninteractive
 
-RUN printf '%s\n' \
-      'Types: deb' \
-      'URIs: http://mirrors.kernel.org/debian' \
-      'Suites: trixie trixie-updates' \
-      'Components: main' \
-      'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' \
-      '' \
-      'Types: deb' \
-      'URIs: http://security.debian.org/debian-security' \
-      'Suites: trixie-security' \
-      'Components: main' \
-      'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' \
-    > /etc/apt/sources.list.d/debian.sources
-
-RUN apt-get update \
+# Default profile fits a small host. Optional packages add image size, not extra services.
+ARG INSTALL_HEAVY_TOOLS=false
+RUN sed -i 's|http://deb.debian.org/debian-security|https://security.debian.org/debian-security|; s|http://deb.debian.org/debian|https://mirrors.kernel.org/debian|' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-      bash \
-      coreutils \
-      findutils \
-      grep \
-      sed \
-      gawk \
-      less \
-      tar \
-      gzip \
-      zip \
-      unzip \
-      file \
-      nano \
-      vim-tiny \
-      xxd \
-      bsdmainutils \
-      curl \
-      wget \
-      git \
-      jq \
-      ripgrep \
-      bat \
-      fd-find \
-      moreutils \
-      tree \
-      tmux \
-      procps \
-      psmisc \
-      net-tools \
-      python3 \
-      python3-pip \
-      python3-venv \
-      pipx \
-      netcat-openbsd \
-      openssh-client \
-      nmap \
-      socat \
-      openssl \
-      dnsutils \
-      whois \
-      iputils-ping \
-      iproute2 \
-      gcc \
-      g++ \
-      make \
-      pkg-config \
-      patch \
-      gdb \
-      binutils \
-      strace \
-      ltrace \
-      patchelf \
-      nasm \
-      checksec \
-      pngcheck \
-      zbar-tools \
-      steghide \
-      binwalk \
-      foremost \
-      sleuthkit \
-      libimage-exiftool-perl \
-      fastfetch \
-      libcap2-bin \
+      ca-certificates tini util-linux bash bash-completion coreutils findutils \
+      grep sed gawk less tar gzip zip unzip p7zip-full unrar-free zstd \
+      file nano vim-tiny xxd bsdextrautils curl wget git jq ripgrep bat fd-find \
+      moreutils tree tmux procps psmisc net-tools sqlite3 \
+      python3 python3-pip python3-venv pipx \
+      netcat-openbsd openssh-client nmap socat openssl dnsutils whois \
+      iputils-ping iproute2 gobuster john hashid \
+      gcc g++ make cmake pkg-config patch gdb binutils strace ltrace patchelf nasm checksec \
+      pngcheck zbar-tools steghide binwalk foremost sleuthkit libimage-exiftool-perl fastfetch \
+    && if [ "$INSTALL_HEAVY_TOOLS" = true ]; then apt-get install -y --no-install-recommends hashcat tshark tcpdump; fi \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth 1 https://github.com/radareorg/radare2 /opt/radare2 \
-    && /opt/radare2/sys/install.sh
-
-RUN python3 -m pip install --break-system-packages --no-cache-dir \
-      requests \
-      beautifulsoup4 \
-      pycryptodome \
-      z3-solver \
-      capstone \
-      unicorn \
-      ropper \
-      pwntools
-
-RUN pipx install sqlmap
+# Keep the distro Python intact; all bundled libraries live in one reusable venv.
+RUN python3 -m venv /opt/ctf-python \
+    && /opt/ctf-python/bin/pip install --no-cache-dir \
+      requests beautifulsoup4 pycryptodome z3-solver capstone unicorn \
+      ropper ROPGadget pwntools sympy gmpy2 pillow pyelftools scapy sqlmap \
+    && for cmd in pwn checksec ropper ROPgadget sqlmap; do \
+         if [ -f "/opt/ctf-python/bin/$cmd" ]; then ln -sf "/opt/ctf-python/bin/$cmd" "/usr/local/bin/$cmd"; fi; \
+       done
 
 RUN groupadd --gid 1001 ctf \
     && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash ctf \
-    && rm -f /usr/bin/sudo /bin/su /usr/bin/su \
-    && chmod 0755 /usr/bin/apt /usr/bin/apt-get || true \
-    && setcap cap_net_raw+ep /bin/ping || true
+    && rm -f /usr/bin/sudo /bin/su /usr/bin/su
 
 WORKDIR /app
-
-RUN npm install -g npm@latest \
-    && npm cache clean --force
-
-COPY package.json package-lock.json* ./
-RUN npm install --omit=dev --no-audit --no-fund \
-    && npm cache clean --force
-
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile --production
+COPY server.ts tsconfig.json ./
+COPY lib ./lib
 COPY public ./public
-COPY server.js ./server.js
 COPY scripts ./scripts
-COPY templates /opt/ctf-template
-
-RUN mkdir -p /app/public/xterm /tmp/ctf-web-cli/sessions \
-    && cp node_modules/@xterm/xterm/css/xterm.css /app/public/xterm/xterm.css \
-    && cp node_modules/@xterm/xterm/lib/xterm.js /app/public/xterm/xterm.js \
-    && cp node_modules/@xterm/addon-fit/lib/addon-fit.js /app/public/xterm/addon-fit.js \
-    && install -m 0755 /app/scripts/restricted-demo-shell.sh /usr/local/bin/restricted-demo-shell \
-    && install -m 0755 /app/scripts/cleanup.sh /usr/local/bin/ctf-web-cli-cleanup \
-    && chown -R root:root /app /opt/ctf-template \
-    && chown -R ctf:ctf /tmp/ctf-web-cli \
-    && chmod 0711 /tmp/ctf-web-cli /tmp/ctf-web-cli/sessions
+COPY templates ./templates
+# Enforce LF shebangs even when building a Windows checkout.
+RUN sed -i 's/\r$//' scripts/*.py \
+    && install -m 0755 scripts/clite.py /usr/local/bin/clite \
+    && mkdir -p /tmp/ctf-web-cli/sessions \
+    && chmod 0711 /tmp/ctf-web-cli /tmp/ctf-web-cli/sessions \
+    && chmod -R go-w /app /opt/ctf-python
 
 EXPOSE 7860
-
-CMD ["node", "server.js"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=15s \
+    CMD curl -fsS "http://127.0.0.1:${PORT}/healthz" || exit 1
+ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
+CMD ["bun", "run", "server.ts"]

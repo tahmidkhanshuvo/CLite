@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", "module": "Preserve", "moduleResolution": "Bundler",
+    "lib": ["ESNext", "DOM"], "types": ["bun"], "strict": true,
+    "useUnknownInCatchVariables": false, "skipLibCheck": true,
+    "esModuleInterop": true, "noEmit": true
+  },
+  "include": ["server.ts", "lib/**/*.ts", "tests/**/*.ts"]
+}

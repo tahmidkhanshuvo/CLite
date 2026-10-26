@@ -1,102 +1,17 @@
-# CLite v1.0 Team Session
+# Team CTF workspace
 
-CLite means CLI Lite.
+Start with `clite help`, `clite tools` and `clite doctor`.
 
-This team shell provides a ready-to-use Linux workspace for CTF practice, command-line learning, and collaborative lab work.
+- `clite init NAME` creates a challenge folder with files/, output/, notes.md and solve.py.
+- Your Python venv is already active: `pip install PACKAGE` and `pip install -U PACKAGE` work locally.
+- `pipx install PACKAGE` and `pipx upgrade-all` manage local command-line apps.
+- `clite install web|crypto|forensics|stego` installs optional presets.
+- `clite system update`, `clite system install PACKAGE`, `clite system upgrade` manage relocatable Debian tools under ~/.local/opt/sysroot. Base OS/root-only changes require a rebuild.
+- Use tmux, editors, Git, compilers, debuggers and outbound network tools normally for authorized challenges.
+- Upload challenge files from the toolbar. Uploads land in HOME and never overwrite files.
+- Run `clite snapshot` then Download workspace before expiry or a deployment.
+- In a fresh session, upload your ZIP, run `unzip clite-workspace.zip`, then `clite restore`.
 
-Need help? Contact admin@tahmidkhan.com.bd.
-
-## Quick Start
-
-| Command | What it is used for |
-| --- | --- |
-| `whoami` | Confirm the session user. |
-| `pwd` | Show the current directory. |
-| `ls -la` | Inspect files, permissions, and hidden files. |
-| `fastfetch` | Display system information. |
-| `python3 -m venv venv` | Create a local Python virtual environment. |
-| `source venv/bin/activate` | Activate the virtual environment. |
-| `python3 -c "import pwn, z3, capstone, unicorn, Crypto"` | Confirm common CTF Python packages are available. |
-| `pip install <package>` | Add extra Python libraries inside this temporary workspace. |
-
-## Core Tools
-
-| Tool | What it is used for |
-| --- | --- |
-| `bash` | Interactive shell. |
-| `coreutils` | Common commands such as `ls`, `cat`, `cp`, `mv`, `rm`, and `mkdir`. |
-| `find` | Locate files and directories. |
-| `grep` | Search text and logs. |
-| `sed` | Stream-edit text. |
-| `gawk` | Process structured text and columns. |
-| `less` | Page through long output. |
-| `tree` | Show directory structure. |
-| `tmux` | Manage multiple terminal panes/sessions. |
-| `nano` | Simple terminal text editor. |
-| `vim.tiny` | Lightweight Vim editor. |
-| `batcat` | Read files with syntax highlighting. |
-| `fdfind` | Fast file search. |
-| `file` | Identify file types. |
-| `xxd` | Hexdump and inspect bytes. |
-| `zip` / `unzip` | Work with ZIP archives. |
-| `tar` / `gzip` | Work with tarballs and compressed files. |
-
-## Network And Web Tools
-
-| Tool | What it is used for |
-| --- | --- |
-| `curl` | Make HTTP requests and test APIs. |
-| `wget` | Download files from URLs. |
-| `nc` | Connect to TCP/UDP services and simple CTF sockets. |
-| `socat` | Advanced socket piping and relays. |
-| `ssh` | Connect to remote SSH hosts. |
-| `scp` | Copy files over SSH. |
-| `sftp` | Interactive file transfer over SSH. |
-| `nmap` | Scan owned/lab hosts and services. |
-| `dig` / `nslookup` | Query DNS records. |
-| `whois` | Look up domain registration details. |
-| `ping` | Check basic network reachability. |
-| `ip` | Inspect network interfaces and routes. |
-| `openssl` | Work with TLS, certificates, hashes, and crypto primitives. |
-
-## Development And CTF Tools
-
-| Tool | What it is used for |
-| --- | --- |
-| `python3` | Scripting, automation, crypto, parsing, and exploit helpers. |
-| `pip` | Install Python packages inside a virtual environment. |
-| `pipx` | Run isolated Python CLI tools. |
-| `git` | Clone and inspect repositories. |
-| `jq` | Parse and transform JSON. |
-| `gcc` / `g++` | Compile C and C++ programs. |
-| `make` | Run project build recipes. |
-| `gdb` | Debug native binaries. |
-| `binutils` | Binary utilities such as `objdump`, `readelf`, and `strings`. |
-| `strace` | Trace system calls. |
-| `ltrace` | Trace library calls. |
-| `patchelf` | Inspect or adjust ELF interpreter and RPATH values. |
-| `nasm` | Assemble x86/x86_64 assembly. |
-| `checksec` | Inspect binary hardening features. |
-| `radare2` | Reverse engineer and inspect binaries. |
-| `pngcheck` | Validate and inspect PNG files. |
-| `zbarimg` | Decode barcodes and QR codes from images. |
-| `steghide` | Work with steganography challenge files. |
-| `binwalk` | Analyze firmware and embedded file signatures. |
-| `foremost` | Recover files by headers and footers. |
-| `sleuthkit` | Inspect disk images and filesystems. |
-| `exiftool` | Inspect and edit metadata. |
-| `requests`, `beautifulsoup4`, `pycryptodome`, `z3-solver`, `capstone`, `unicorn`, `ropper`, `pwntools` | Preinstalled Python CTF libraries. |
-| `sqlmap` | Test SQL injection in owned/lab targets. |
-| `fastfetch` | Display system information. |
-
-## Session Notes
-
-| Rule | Details |
-| --- | --- |
-| User | Browser sessions run as `ctf`, not root. |
-| Files | Session files are temporary and are deleted when the session ends. |
-| Packages | System package installs with `apt` are not available from the browser shell. |
-| Python | Use a virtual environment for Python packages. |
-| SSH | SSH client tools are available for outbound connections to systems you own or are authorized to use. |
+The workspace survives short disconnects and page refreshes while this server instance lives. It is temporary. Download your work before the displayed deadline or a server restart. Package caches, virtual environments and SSH keys are excluded from exports. Teammates share a Linux account; use this instance only with trusted teammates.
 
 Built for ethical CTFs, lab practice, and owned learning environments.

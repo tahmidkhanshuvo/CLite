@@ -36,7 +36,7 @@
     if (event.target === dialog) closeDialog();
   });
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const key = input.value.trim();
 
@@ -46,6 +46,21 @@
       return;
     }
 
-    window.location.href = `/team?key=${encodeURIComponent(key)}`;
+    const submit = form.querySelector('[type="submit"]');
+    submit.disabled = true;
+    error.textContent = "Checking access...";
+    try {
+      const result = await fetch("/api/team/login", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key })
+      });
+      const payload = await result.json().catch(() => ({ error: "Please wait before trying again." }));
+      if (!result.ok) throw new Error(payload.error);
+      input.value = "";
+      window.location.href = "/team";
+    } catch (err) {
+      error.textContent = err.message || "Unable to sign in.";
+    } finally { submit.disabled = false; }
   });
+  if (new URLSearchParams(location.search).get("team") === "login") openDialog();
 })();

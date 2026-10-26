@@ -362,6 +362,28 @@ h1 {
   min-width: 0;
 }
 
+.terminal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--panel);
+}
+
+.terminal-actions button {
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.terminal-actions button:disabled { opacity: 0.45; cursor: default; }
+.terminal-actions button:focus-visible { outline: 2px solid var(--accent); }
+.session-panel .banner { margin: 0; font-size: 0.78rem; color: var(--muted); }
+
 .topbar {
   display: flex;
   align-items: center;

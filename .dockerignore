@@ -9,3 +9,9 @@ tmp
 *.tar
 *.zip
 Dockerfile.local
+tmp
+tests
+docs
+**/__pycache__
+.env.*
+package-lock.json
