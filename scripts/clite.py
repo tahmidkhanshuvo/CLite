@@ -45,7 +45,11 @@ def apt_command(action, packages):
         directory.mkdir(parents=True, exist_ok=True)
     manifest = APT_ROOT / "packages.json"
     installed = json.loads(manifest.read_text()) if manifest.exists() else []
-    settings = ["-o", f"Dir::State::lists={APT_ROOT / 'lists'}", "-o", f"Dir::Cache::archives={APT_ROOT / 'archives'}",
+    # Container-wide cache cleanup hooks cannot write as ctf. Clear those hooks
+    # in this user-owned invocation only, leaving repository verification intact.
+    apt_config = APT_ROOT / "user.conf"
+    apt_config.write_text("#clear APT::Update::Post-Invoke;\n#clear DPkg::Post-Invoke;\n", encoding="utf-8")
+    settings = ["-c", str(apt_config), "-o", f"Dir::State::lists={APT_ROOT / 'lists'}", "-o", f"Dir::Cache::archives={APT_ROOT / 'archives'}",
                 "-o", "Debug::NoLocking=true", "-o", "APT::Sandbox::User=" + os.environ.get("USER", "ctf")]
     if action in {"update", "upgrade"} or not any((APT_ROOT / "lists").glob("*Packages*")):
         run(["apt-get", *settings, "update"])
