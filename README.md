@@ -15,7 +15,7 @@ Open http://localhost:7860. Public practice is at `/demo`; sign in through **Tea
 ## What changed
 
 - Native Bun PTYs replace Node and node-pty. The backend is strictly checked TypeScript.
-- Five public CTF exercises, hints, flag checks, pipelines, redirects, notes, uploads and downloads.
+- A linked detective trail with Bangladesh, science, folklore, fiction and cinema references; clues cross between the practice workspace and website. Hints, evidence checks, pipelines, notes and downloads support the investigation.
 - Reconnects and page refreshes recover the same shell and workspace for a configurable grace period, including bounded terminal replay.
 - Separate demo/team idle deadlines, authoritative countdowns, expiry warnings and an explicit Keep working action. Team tool output refreshes idle activity; resize and transport heartbeat do not. The absolute lifetime remains enforced.
 - A session venv and user-local pipx directories let teammates install and update tools without changing other sessions' Python environments.
@@ -71,10 +71,14 @@ Offline packet analysis works with appropriate tools. Raw packet capture, GPU cr
 
 ## Public practice
 
+Start with `case` or `cat CASEFILE.md`. Follow the evidence through an original story about Tahmid's missing competition dispatch. Accepted flags reveal the next scene. Clues are tucked into local artifacts, HTML comments, CSS, SVG metadata, crawler instructions and HTTP headers. There is no visible challenge total or public answer list. `hint ID` offers a nudge; `score` reports evidence recovered. `case-progress.json` is portable with workspace downloads. References include Bangladeshi places and folklore, detective fiction, science, idioms and cinema; outside trivia is never required.
+
 This is an explicit offline practice shell, not Bash. It implements workspace-scoped commands without subprocess execution, arbitrary Python, shell expansion or network access. The previous executable allowlist was not a security boundary: Python, find and other tools could launch arbitrary programs.
 
 ```sh
-challenges
+case
+cat CASEFILE.md
+# Optional standalone warmup:
 cat challenges/encoded.txt | base64 -d > answer.txt
 cat answer.txt
 check encoding 'CLITE{layers_unwrapped}'
@@ -133,4 +137,10 @@ python -m unittest discover -s tests -p 'test_*.py'
 bun run dev
 ```
 
-Bun 1.4.4 is the tested runtime. TypeScript is checked separately; execution needs no compilation step. Linux PTY tests run inside the image. CI verifies types, sessions, auth, origins, file transfer, demo confinement and the Docker image. The image installs repository security updates during build; rebuild regularly to receive Python/OS fixes.
+Bun 1.4.4 is the tested runtime. TypeScript is checked separately; execution needs no compilation step. Linux PTY tests run inside the image. CI verifies types, sessions, auth, origins, file transfer, demo confinement, every linked puzzle, generated story artifacts and the Docker image. The image installs repository security updates during build; rebuild regularly to receive Python/OS fixes.
+
+## Maintaining the case
+
+The original story is authored in `scripts/build-story.py`. Run `python scripts/build-story.py` after changing its scenes or evidence, then `python scripts/build-story.py --check`. It produces workspace artifacts, website margin notes and hashed answer metadata in `data/`. The authoring source is intentionally public: this is a learning trail, not a secret-backed competition scoreboard. There are no player flags or runtime secrets in the answer manifest.
+
+Keep the v1 terminal aesthetic: the ASCII logo at the top of both terminals, green-on-dark styling, restrained controls and clues that reveal themselves through investigation. New story content should not add a numbered challenge dashboard or expose the route on the landing page.

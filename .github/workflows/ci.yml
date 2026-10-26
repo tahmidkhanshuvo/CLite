@@ -12,5 +12,6 @@ jobs:
       - run: bun run typecheck
       - run: bun test
       - run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - run: python3 scripts/build-story.py --check
       - run: docker build -t clite:test .
       - run: docker run --rm --entrypoint /bin/sh -v "$PWD/tests:/app/tests:ro" clite:test -c "bun test && python3 -m unittest discover -s tests -p 'test_*.py'"

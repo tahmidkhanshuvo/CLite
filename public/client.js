@@ -86,7 +86,7 @@
         if (message.resumed) term.reset();
         status(message.resumed ? "Resumed" : "Connected", true);
         state(message);
-        notice(mode === "demo" ? "Start with challenges or help. Practice files and notes can be downloaded." : "Use clite help. Download workspaces before expiry or server restarts.");
+        notice(mode === "demo" ? "A case is waiting in the margins. Type case or help. Download your notes before expiry." : "Use clite help. Download workspaces before expiry or server restarts.");
         fit();
         term.focus();
       } else if (message.type === "state") {

@@ -1,0 +1,3 @@
+Contact: mailto:admin@tahmidkhan.com.bd
+Canonical: https://clite.tahmidkhan.com.bd/.well-known/security.txt
+# For the fictional case, consult the crawler's route at /robots.txt

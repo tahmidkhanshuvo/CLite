@@ -17,16 +17,25 @@ import sys
 import urllib.parse
 
 LIMIT = 1024 * 1024
+ASCII = r"""  ____ _     _ _
+ / ___| |   (_) |_ ___
+| |   | |   | | __/ _ \
+| |___| |___| | ||  __/
+ \____|_____|_|\__\___|"""
+STORY = json.loads((Path(__file__).resolve().parents[1] / "data" / "story.json").read_text(encoding="utf-8"))
+STORY_BY_ID = {entry["id"]: entry for entry in STORY}
 HELP = """CLite 2.0 public practice shell
 Navigation: pwd, ls [-a], cd, tree, find [path] [-name glob]
 Files: cat, head [-n N], tail [-n N], touch, mkdir [-p], cp, mv, rm
-Text: echo [-n], grep [-invc] TEXT [file] (literal search), sort [-ru], uniq [-c], wc [-lwc], diff
-Bytes: strings, xxd [-r -p], base64 [-d], base32 [-d], hex [-d], rot13, url [-d]
+Text: echo [-n], grep [-invc] TEXT [file] (literal search), sort [-ru], uniq [-c], wc [-lwc], diff, rev, cut, tr
+Bytes: strings, xxd [-r -p], base64 [-d], base32 [-d], hex [-d], rot13, url [-d], ascii [-d], xor HEXKEY, caesar SHIFT
 Data: jq .path [file], md5sum, sha1sum, sha256sum, file, stat
-Practice: challenges, hint ID, check ID FLAG, score, help, clear, exit
+Practice: case, challenges, hint [ID], check ID FLAG, score, help, clear, exit
 Use pipelines and redirects: cat challenges/encoded.txt | base64 -d > answer.txt
 Create notes: echo 'my findings' >> notes.txt
-Read README.md for exercises. Upload files and download this workspace with the toolbar.
+Read CASEFILE.md for the detective trail. The next lead appears when evidence is accepted.
+Some leads hide in this website: inspect browser source, CSS, SVG metadata and response headers.
+Upload files and download this workspace with the toolbar.
 All paths stay in your workspace. No host commands, network, Python execution, or package installs.
 Team mode provides the full Linux toolchain. This demo implements the commands listed above.
 """
@@ -44,6 +53,29 @@ class DemoShell:
         self.root = Path(root).resolve()
         self.cwd = self.root
         self.solved = set()
+        self.load_progress()
+
+    def load_progress(self):
+        progress = self.root / "case-progress.json"
+        if progress.is_file() and not progress.is_symlink() and progress.stat().st_size < 16384:
+            try:
+                saved = json.loads(progress.read_text(encoding="utf-8"))
+                if isinstance(saved, list):
+                    self.solved = {key for key in saved if isinstance(key, str) and (key in STORY_BY_ID or key in CHALLENGES)}
+            except (OSError, ValueError):
+                pass
+
+    def current_case(self):
+        return next((entry for entry in STORY if entry["id"] not in self.solved), None)
+
+    def case_status(self):
+        entry = self.current_case()
+        if not entry:
+            return "The missing dispatch is home. Tahmid's green cursor blinks again. Case closed."
+        return f"{entry['act']}\n{entry['title']}\nLead: {entry['location']} ({entry['surface']})\nUse hint {entry['id']} for a nudge; submit with check {entry['id']} FLAG."
+
+    def save_progress(self):
+        self.write("~/case-progress.json", json.dumps(sorted(self.solved)).encode())
 
     def path(self, value="."):
         if value in ("~", "$HOME"):
@@ -214,6 +246,44 @@ class DemoShell:
             return b""
         if cmd == "echo":
             return " ".join(args[1:] if args[:1] == ["-n"] else args).encode() + (b"" if args[:1] == ["-n"] else b"\n")
+        if cmd == "rev":
+            return out("\n".join(row[::-1] for row in text(source()).splitlines()))
+        if cmd == "cut":
+            delimiter, field = "\t", 1
+            values = []
+            index = 0
+            while index < len(args):
+                if args[index] in ("-d", "-f"):
+                    if args[index] == "-d":
+                        delimiter = args[index + 1]
+                    else:
+                        field = int(args[index + 1])
+                    index += 2
+                else:
+                    values.append(args[index])
+                    index += 1
+            if len(delimiter) != 1 or field < 1:
+                raise ValueError("Usage: cut -d DELIMITER -f FIELD [file]")
+            return out("\n".join(parts[field - 1] if len(parts) >= field else "" for parts in (row.split(delimiter) for row in text(source()).splitlines())))
+        if cmd == "tr":
+            if args[:1] != ["-d"] or len(args) != 2:
+                raise ValueError("Demo tr supports: tr -d CHARACTERS (pipeline input)")
+            chars = args[1].replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t")
+            return "".join(c for c in text(stdin) if c not in chars).encode()
+        if cmd in ("caesar", "xor", "ascii"):
+            if cmd == "ascii":
+                return bytes(int(value) for value in text(source()).split()) if "-d" in flags else out(" ".join(str(b) for b in source()))
+            if not args:
+                raise ValueError("Supply a Caesar shift or a hex XOR key")
+            values = args[1:]
+            data = source()
+            if cmd == "xor":
+                key = bytes.fromhex(args[0])
+                if not key:
+                    raise ValueError("XOR key cannot be empty")
+                return bytes(value ^ key[i % len(key)] for i, value in enumerate(bytes.fromhex(text(data))))
+            shift = int(args[0]) % 26
+            return "".join(chr((ord(c) - ord("A" if c.isupper() else "a") + shift) % 26 + ord("A" if c.isupper() else "a")) if c.isascii() and c.isalpha() else c for c in text(data)).encode()
         if cmd in ("cat", "batcat"):
             return source()
         if cmd in ("head", "tail"):
@@ -308,19 +378,32 @@ class DemoShell:
                     kind = "PNG image" if data.startswith(b"\x89PNG") else "ZIP archive" if data.startswith(b"PK\x03\x04") else "ELF binary" if data.startswith(b"\x7fELF") else "data" if b"\x00" in data else "text"
                     rows.append(f"{value}: {kind}")
             return out("\n".join(rows))
-        if cmd == "challenges":
-            return out("\n".join(f"{'[solved]' if key in self.solved else '[ ]'} {key}: {value[0]}" for key, value in CHALLENGES.items()))
+        if cmd in ("case", "clues", "challenges"):
+            if args == ["restore"]:
+                self.load_progress()
+            return out(self.case_status())
         if cmd == "hint":
-            return out(CHALLENGES[args[0]][1])
+            key = args[0] if args else (self.current_case() or {}).get("id", "")
+            return out(STORY_BY_ID[key]["hint"] if key in STORY_BY_ID else CHALLENGES[key][1])
         if cmd == "check":
             if len(args) != 2:
                 raise ValueError("Usage: check ID 'CLITE{flag}'")
+            if args[0] in STORY_BY_ID:
+                entry = STORY_BY_ID[args[0]]
+                if entry != self.current_case() and entry["id"] not in self.solved:
+                    return out("The route is incomplete. Use case to follow your current lead.")
+                if hashlib.sha256(args[1].encode()).hexdigest() == entry["sha256"]:
+                    self.solved.add(entry["id"])
+                    self.save_progress()
+                    return out("Evidence accepted.\n\n" + self.case_status())
+                return out("That statement does not match the evidence. Try hint " + entry["id"])
             if args[1] == CHALLENGES[args[0]][2]:
                 self.solved.add(args[0])
-                return out(f"Correct! {len(self.solved)}/{len(CHALLENGES)} solved.")
+                self.save_progress()
+                return out(f"Correct! Evidence recovered: {len(self.solved)}.")
             return out("Not quite. Try hint " + args[0])
         if cmd == "score":
-            return out(f"{len(self.solved)}/{len(CHALLENGES)} challenges solved in this session")
+            return out(f"Evidence recovered: {len(self.solved)}.\n" + self.case_status())
         raise ValueError(f"{cmd}: unavailable in practice mode. Type help; use Team Mode for full Linux tools.")
 
 
@@ -330,7 +413,7 @@ def main():
     except ImportError:
         pass
     shell = DemoShell(Path.cwd())
-    print("\nCLite 2.0 | Public CTF practice | Tahmid Khan\nType help or challenges to start. Files stay in your temporary workspace.\n")
+    print("\n" + ASCII + "\n\nCLite 2.0 | Public CTF practice | Tahmid Khan\nA case is waiting in the margins. Type case or read CASEFILE.md.\nType help for tools. Files stay in your temporary workspace.\n")
     while True:
         try:
             shown = shell.cwd.relative_to(shell.root).as_posix()

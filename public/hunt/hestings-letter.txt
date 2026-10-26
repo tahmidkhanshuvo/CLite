@@ -1,0 +1,1 @@
+case:hestings-letter | base64:Q0xJVEV7bWFzdWRfcmFuYV9rZWVwc19oaXNfY29vbF9oZXN0aW5nc19sZXR0ZXJfOTBmNTQ0fQ== | return to the practice terminal: check hestings-letter FLAG

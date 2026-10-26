@@ -1,0 +1,14 @@
+{
+  "/": {
+    "X-Clite-kakababu-map": "base64:Q0xJVEV7a2FrYWJhYnVfa2VlcHNfdGhlX21hcF9rYWthYmFidV9tYXBfZjc2MzY5fQ=="
+  },
+  "/demo": {
+    "X-Clite-debugger-lamp": "base64:Q0xJVEV7bWFzdWRfcmFuYV9rZWVwc19oaXNfY29vbF9kZWJ1Z2dlcl9sYW1wXzExZWYzOX0="
+  },
+  "/api/capabilities": {
+    "X-Clite-jackfruit-crate": "base64:Q0xJVEV7d2FrYW5kYV9ndWFyZHNfdGhlX2FyY2hpdmVfamFja2ZydWl0X2NyYXRlX2M0NzQ2ZX0="
+  },
+  "/healthz": {
+    "X-Clite-bengal-casebook": "base64:Q0xJVEV7dGhlX3dvcm1ob2xlX2xlYWRzX3RvX2JlbmdhbF9iZW5nYWxfY2FzZWJvb2tfMmYwMmZifQ=="
+  }
+}

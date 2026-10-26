@@ -44,7 +44,7 @@ test.skipIf(process.platform !== "linux" || !existsSync("/opt/ctf-python"))("nat
       while (!output.includes("\r\n" + marker) && Date.now() < deadline) await Bun.sleep(50);
       expect(output).toContain("\r\n" + marker);
       if (mode === "team") {
-        expect(output).toContain("\r\n1001\r\n");
+        expect(output.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, "").split("\n").some(line => line.trim() === "1001")).toBe(true);
         expect(output).not.toContain("Traceback");
       }
       ws.send(JSON.stringify({ type: "end" }));

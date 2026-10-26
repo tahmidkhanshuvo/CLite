@@ -12,13 +12,22 @@ import { WebSocketServer, type WebSocket } from "ws";
 import { loadConfig, type Config } from "./lib/config";
 import { SessionManager, send, safeEqual, size, type SpawnSession, type Mode } from "./lib/sessions";
 import { spawnTerminal } from "./lib/terminal";
+import storyHeaders from "./data/story-headers.json";
 
 dotenv.config({ quiet: true });
 
 const WINDOWS = process.platform === "win32";
 const PYTHON = WINDOWS ? "python" : "/usr/bin/python3";
 const ROOT = import.meta.dir;
+const ASCII = String.raw`  ____ _     _ _
+ / ___| |   (_) |_ ___
+| |   | |   | | __/ _ \
+| |___| |___| | ||  __/
+ \____|_____|_|\__\___|`;
 const BASHRC = `
+cat <<'CLITE_ART'
+${ASCII}
+CLITE_ART
 export PATH="$HOME/.local/bin:$HOME/.venv/bin:$HOME/.local/opt/sysroot/usr/bin:$HOME/.local/opt/sysroot/bin:$HOME/.local/opt/sysroot/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/games"
 export PIPX_HOME="$HOME/.local/share/pipx" PIPX_BIN_DIR="$HOME/.local/bin"
 export XDG_CACHE_HOME="$HOME/.cache" XDG_CONFIG_HOME="$HOME/.config" XDG_DATA_HOME="$HOME/.local/share"
@@ -139,8 +148,10 @@ export function createApplication(options: { config?: Config; spawnSession?: Spa
       "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
       "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; font-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
       "Cache-Control": "no-store" });
+    res.set((storyHeaders as Record<string, Record<string, string>>)[req.path] || {});
     next();
   });
+  app.get("/.well-known/security.txt", (req, res) => res.type("text/plain").sendFile(path.join(ROOT, "public", ".well-known", "security.txt"), { dotfiles: "allow" }));
   app.get("/healthz", (req, res) => res.status(stopping ? 503 : 200).json({ status: stopping ? "stopping" : "ok", version: "2.0.0" }));
   app.use(rateLimit({ windowMs: 60_000, limit: 180, standardHeaders: true, legacyHeaders: false }));
   const authLimit = rateLimit({ windowMs: 15 * 60_000, limit: 15, standardHeaders: true, legacyHeaders: false });

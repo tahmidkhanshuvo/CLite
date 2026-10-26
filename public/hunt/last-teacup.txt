@@ -1,0 +1,1 @@
+case:last-teacup | base64:Q0xJVEV7d2FrYW5kYV9ndWFyZHNfdGhlX2FyY2hpdmVfbGFzdF90ZWFjdXBfOGNiZjkxfQ== | return to the practice terminal: check last-teacup FLAG

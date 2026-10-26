@@ -61,6 +61,7 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 COPY server.ts tsconfig.json ./
 COPY lib ./lib
+COPY data ./data
 COPY public ./public
 COPY scripts ./scripts
 COPY templates ./templates
@@ -69,7 +70,7 @@ RUN sed -i 's/\r$//' scripts/*.py \
     && install -m 0755 scripts/clite.py /usr/local/bin/clite \
     && mkdir -p /tmp/ctf-web-cli/sessions \
     && chmod 0711 /tmp/ctf-web-cli /tmp/ctf-web-cli/sessions \
-    && chmod -R go-w /app /opt/ctf-python
+    && chmod 0755 /app /opt/ctf-python
 
 EXPOSE 7860
 HEALTHCHECK --interval=30s --timeout=3s --start-period=15s \

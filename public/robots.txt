@@ -1,0 +1,6 @@
+User-agent: *
+# The bookshop keeper left a crawler's route through the case.
+Disallow: /hunt/sundarbans-watch.txt
+Disallow: /hunt/python-postmark.txt
+Disallow: /hunt/hestings-letter.txt
+Disallow: /hunt/last-teacup.txt
