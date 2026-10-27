@@ -1,72 +1,89 @@
+<div align="center">
+
 # CLite
 
-```text
+<pre>
   ____ _     _ _
  / ___| |   (_) |_ ___
 | |   | |   | | __/ _ \
 | |___| |___| | ||  __/
  \____|_____|_|\__\___|
-```
+</pre>
 
-**CLI Lite — a portable Linux CTF workspace in your browser.**
+**Your CTF workspace. One browser tab.**
 
-Real Debian Linux, a ready-to-use security toolchain, and an original detective trail hidden in the margins. Built for ethical competitions, lab practice, and systems you are authorized to test.
+Real Linux · Bun + TypeScript · Python · xterm.js
 
-[Live site](https://clite.tahmidkhan.com.bd) · [Public practice](https://clite.tahmidkhan.com.bd/demo) · [Operations guide](docs/GUIDE.md)
+[Open CLite](https://clite.tahmidkhan.com.bd) &nbsp; · &nbsp; [Try the public demo](https://clite.tahmidkhan.com.bd/demo) &nbsp; · &nbsp; [Read the guide](docs/GUIDE.md)
 
-## A familiar terminal
+</div>
 
-### Public practice
+[![CLite homepage with its classic green terminal theme, ASCII logo, and public and team launch controls](docs/images/home.jpg)](https://clite.tahmidkhan.com.bd)
 
-![Public practice terminal with the CLite ASCII banner and opening case](docs/images/public-demo.jpg)
+**CLite means CLI Lite.** A browser workspace for CTF competitions, command-line learning, and team labs. Open the public demo to follow a trail of evidence, or enter Team Shell for a real Debian Linux environment with tools ready to use.
 
-Follow a trail through Bangladesh, bookshop margins, science, folklore, and cinema. Recover evidence from files, simulated targets, and read-only public research, then let each accepted flag reveal the next lead. OSINT, web, crypto, forensics, stego, reversing, pwn, networks, programming, and specialist exhibits belong to the same investigation.
+## Two ways in
+
+| | Public demo | Team Shell |
+| :--- | :--- | :--- |
+| Access | Open to everyone | Your team's shared key |
+| Environment | A contained practice shell | Real non-root Linux and Bash |
+| Explore | Linked cases, hidden clues, and public research | Challenge files, networking, reversing, crypto, and forensics |
+| Make it yours | Notes, uploads, and portable quest progress | Install packages, build tools, and restore dependencies |
+| Begin with | `case` | `clite help` |
+
+<details>
+<summary><strong>Preview the public demo</strong></summary>
+
+![Public practice terminal with the CLite ASCII banner and orange opening hint](docs/images/public-demo.jpg)
+
+A detective trail through Bangladesh, science, folklore, and cinema. Follow clues between the terminal, this site, and read-only public sources. Each solved lead opens another part of the investigation.
+
+</details>
+
+<details>
+<summary><strong>Preview Team Shell</strong></summary>
+
+![Team Shell with its compact workspace menu, session timer, and CLite ASCII banner](docs/images/team.jpg)
+
+An actual Linux workspace for trusted teammates. Bring a challenge, install what it needs, and keep your workflow in the terminal.
+
+</details>
+
+## Ready for competition day
+
+- **A familiar toolchain.** Networking, web, reversing, forensics, stego, crypto, compilers, editors, and Python tools.
+- **Room to experiment.** Session-local `pip`, `pipx`, and Debian package installation, updates, and upgrades.
+- **Connection recovery.** Refresh or reconnect within the grace period to recover your shell, files, jobs, and recent output.
+- **Clear session controls.** Separate idle and lifetime limits, countdowns, expiry warnings, and a Keep working action.
+- **Work you can take with you.** Upload evidence, download a workspace, save a transcript, and snapshot dependencies.
 
 ```sh
-case
-cat CASEFILE.md
-help
+clite tools                    # Explore the installed toolchain
+clite doctor                   # Check your workspace
+clite init warmup              # Start a challenge folder
+pip install PACKAGE            # Add a Python dependency
+clite system install PACKAGE   # Add a user-local Debian package
+clite snapshot                 # Record dependencies before exporting
 ```
-
-### Team workspace
-
-![Real Linux team shell with the restored CLite ASCII banner](docs/images/team.jpg)
-
-A real non-root Bash shell with networking, reversing, forensics, crypto, compilers, editors, and Python tools. Install what a challenge needs in your own workspace.
-
-```sh
-clite tools
-clite doctor
-clite init warmup
-pip install PACKAGE
-pipx install PACKAGE
-clite system install PACKAGE
-```
-
-## Made for competition days
-
-- Recover the same shell, files, and jobs after a short connection loss or page refresh.
-- Separate idle and lifetime settings, clear countdowns, and warnings before expiry.
-- Upload evidence, save terminal output, and download your workspace.
-- Snapshot and restore session-local dependencies with `clite snapshot` and `clite restore`.
-- Keep the classic green terminal, clean layout, and ASCII identity.
 
 ## Run your own
 
 ```sh
 cp .env.example .env
-# Set a strong TEAM_KEY and adjust the session settings in .env.
+# Configure your private keys and session settings in .env.
 docker build -t clite .
 docker run --name clite -p 7860:7860 --env-file .env clite
 ```
 
-Open **http://localhost:7860**. Public practice needs no sign-in; Team Shell uses your configured key.
+Open **http://localhost:7860**. Set a `TEAM_KEY` of at least 16 characters and supply the matching private `QUEST_MASTER_KEY` for the encrypted quest. Keys and quest authoring files stay outside the public repository.
 
-Runtime defaults live in `.env.example`, with `.env` and hosting variables taking precedence. Real env files stay outside Git and Docker images. On Render, import your private env settings and use `/healthz` as the health check. Preserve your existing team key when importing if you do not want to rotate access. The private `QUEST_MASTER_KEY` is also required to open the encrypted quest; never publish it.
+Runtime defaults live in [`.env.example`](.env.example); `.env` and hosting variables override them. For Render deployment, package management, tool inventory, and configuration, see the **[operations guide](docs/GUIDE.md)**.
 
-Team workspaces are temporary and intended for trusted teammates. Download important work before expiry or a server restart. The [operations guide](docs/GUIDE.md) explains the tool inventory, package installation, deployment settings, persistence, and trust boundaries.
+Workspaces are temporary. Export important work before session expiry, deployments, or server restarts. Team Shell is intended for trusted teammates and authorized CTF or lab environments.
 
-## Development
+<details>
+<summary><strong>Local development</strong></summary>
 
 ```sh
 bun install --frozen-lockfile
@@ -76,8 +93,16 @@ python -m unittest discover -s tests -p 'test_*.py'
 bun run dev
 ```
 
-Bun + TypeScript power the backend; xterm.js provides the terminal. `dev` is the development branch, and `main` is the production branch used by Render.
+Use `dev` for development. Render deploys production from `main`. Docker provides the supported Linux environment for Team Shell.
 
-## Creator and support
+</details>
 
-Created by **Tahmid Khan**. For help, feedback, or access questions: **admin@tahmidkhan.com.bd**.
+---
+
+<div align="center">
+
+Created by **Tahmid Khan** · **CLite 2.0**
+
+[Live site](https://clite.tahmidkhan.com.bd) · [Report an issue](https://github.com/tahmidkhanshuvo/CLite/issues) · [Contact support](mailto:admin@tahmidkhan.com.bd)
+
+</div>
