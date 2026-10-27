@@ -398,6 +398,9 @@ h1 {
 .session-notice { position: fixed; z-index: 12; bottom: 18px; right: 18px; max-width: min(540px, calc(100vw - 36px)); margin: 0; padding: 10px 14px; background: #151006; border: 1px solid #5b4120; color: var(--warn); font-size: 0.78rem; line-height: 1.5; box-shadow: 0 6px 25px #0009; }
 .terminal-page .topbar { flex-direction: row; align-items: center; flex-wrap: nowrap; padding: 0 12px; gap: 10px; }
 .terminal-page .status-line { order: 2; flex: 0 1 auto; margin-left: auto; flex-wrap: nowrap; width: auto; justify-content: flex-end; gap: 10px; font-size: 0.78rem; }
+.terminal-page .status-line span { white-space: nowrap; overflow-wrap: normal; }
+.terminal-page #status { overflow: hidden; text-overflow: ellipsis; }
+.terminal-page #timer { flex-shrink: 0; }
 .terminal-page #timer { color: var(--warn); font-variant-numeric: tabular-nums; }
 @media (max-width: 720px) {
   .terminal-page { grid-template-rows: 48px minmax(0, 1fr) !important; }
@@ -653,6 +656,8 @@ h1 {
 }
 
 @media (max-width: 480px) {
+  .terminal-page #modeLabel { display: none; }
+
   .hero {
     align-self: start;
   }
